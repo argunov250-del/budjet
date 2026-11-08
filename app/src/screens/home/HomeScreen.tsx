@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { FadeInUp, Screen, tap, useToast } from '../../components';
 import { categorySpent, dailyLimit, monthSeries, streak } from '../../logic/budget';
@@ -60,7 +59,7 @@ export function HomeScreen() {
   const monthName = MONTHS_NOM[now.getMonth()];
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <>
       <Screen>
         <FadeInUp index={0}><Header now={now} streak={st} /></FadeInUp>
         {(info || filled > 0) && (
@@ -74,6 +73,6 @@ export function HomeScreen() {
         <FadeInUp index={5}><Section title="Последние операции" small="все" onPress={goOps} /></FadeInUp>
         <FadeInUp index={6}><RecentOps txs={recent} categories={categories} now={now} onDelete={del} /></FadeInUp>
       </Screen>
-    </GestureHandlerRootView>
+    </>
   );
 }

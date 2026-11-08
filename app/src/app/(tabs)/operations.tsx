@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { LinearTransition, useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedNumber, FadeInUp, Icon, NeuCard, Screen, formatRub, tap, useToast } from '../../components';
@@ -94,7 +93,7 @@ export default function OperationsScreen() {
   );
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <>
       <Screen>
         <FadeInUp index={0}>
           <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 30, letterSpacing: -0.5, color: colors.navy }}>Операции</Text>
@@ -154,7 +153,7 @@ export default function OperationsScreen() {
           toast.show(`Добавлено: ${formatRub(amount)}`);
         }}
       />
-    </GestureHandlerRootView>
+    </>
   );
 }
 
@@ -163,7 +162,7 @@ function Fab({ onPress }: { onPress: () => void }) {
   const s = useSharedValue(1);
   const st = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
   return (
-    <Pressable onPress={() => { tap(); onPress(); }} onPressIn={() => { s.value = withSpring(0.9, SPRING); }} onPressOut={() => { s.value = withSpring(1, SPRING); }}>
+    <Pressable accessibilityRole="button" accessibilityLabel="Добавить операцию" onPress={() => { tap(); onPress(); }} onPressIn={() => { s.value = withSpring(0.9, SPRING); }} onPressOut={() => { s.value = withSpring(1, SPRING); }}>
       <Animated.View style={[{ width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ink, boxShadow: shadows.pill }, st]}>
         <Icon name="plus" size={26} color={colors.inkText} strokeWidth={2.4} />
       </Animated.View>
