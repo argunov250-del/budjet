@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { FadeInDown, FadeOut, LinearTransition, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
-import { Icon, NeuCard, tap } from '../../components';
+import Animated, { FadeOut, LinearTransition, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { Icon, NeuCard, emergeEntering, tap } from '../../components';
 import type { Account, Category, Transaction } from '../../store/types';
 import { describeTx } from '../shared/txInfo';
 import { fontFamily, useTheme } from '../../theme';
@@ -36,8 +36,8 @@ function OpRow({ tx, cats, accounts, first, now, animateIn, onDelete }: { tx: Tr
   const icon = v.icon;
   return (
     <Animated.View
-      layout={LinearTransition.springify().damping(20).stiffness(120)}
-      entering={animateIn ? FadeInDown.springify().damping(20) : undefined}
+      layout={LinearTransition.duration(300)}
+      entering={animateIn ? emergeEntering(0) : undefined}
       exiting={FadeOut.duration(180)}
     >
       <View style={{ borderTopWidth: first ? 0 : 1, borderTopColor: colors.divider }}>

@@ -7,7 +7,7 @@ import { fontFamily, useTheme } from '../../theme';
 function Tile({ item, index, onPress }: { item: CategorySpent; index: number; onPress: () => void }) {
   const { colors, shadows } = useTheme();
   return (
-    <FadeInUp delay={(3.6 + index * 0.6) * 90} style={{ flex: 1 }}>
+    <FadeInUp delay={(4 + index) * 70} style={{ flex: 1 }}>
       <NeuCard onPress={onPress} radius={26} padding={16} style={{ gap: 6 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <View style={{ width: 26, height: 26, borderRadius: 9, alignItems: 'center', justifyContent: 'center', boxShadow: shadows.inset }}>

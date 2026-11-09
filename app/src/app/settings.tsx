@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, Share, Text, TextInput, View } from 'react-native';
-import { BottomSheet, FadeInUp, NeuButton, NeuCard, Screen, formatRub, success, tap, useToast } from '../components';
+import { Pressable, Share, Text, View } from 'react-native';
+import { BottomSheet, FadeInUp, NeuInput, NeuButton, NeuCard, Screen, formatRub, success, tap, useToast } from '../components';
 import { accountBalance } from '../logic/budget';
 import { Field, digits } from '../screens/goals/Field';
 import { PressScale, SelChip } from '../screens/shared/ui';
@@ -198,9 +198,9 @@ export default function SettingsScreen() {
         <Text style={{ fontFamily: fontFamily.medium, fontSize: 13, color: colors.text2, marginTop: 4, marginBottom: 12 }}>
           Экспорт делится JSON-текстом (его можно скопировать из поля). Для импорта вставьте JSON в поле — текущие данные будут заменены.
         </Text>
-        <TextInput
-          value={json} onChangeText={setJson} multiline placeholder="{ … }" placeholderTextColor={colors.text2} autoCapitalize="none" autoCorrect={false}
-          style={{ minHeight: 140, maxHeight: 220, textAlignVertical: 'top', fontFamily: fontFamily.medium, fontSize: 12, color: colors.navy, padding: 14, borderRadius: 20, backgroundColor: colors.bg, boxShadow: shadows.inset }}
+        <NeuInput
+          value={json} onChangeText={setJson} multiline placeholder="{ … }" autoCapitalize="none" autoCorrect={false}
+          style={{ minHeight: 140, maxHeight: 220, fontFamily: fontFamily.medium, fontSize: 12 }}
         />
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
           <NeuButton title="Экспортировать" variant="neu" onPress={doExport} />

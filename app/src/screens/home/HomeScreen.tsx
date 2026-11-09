@@ -14,7 +14,7 @@ import { AccountsStrip } from './AccountsStrip';
 import { RecentOps } from './RecentOps';
 import { fillSuggestions, MONTHS_NOM, useNow } from './helpers';
 
-const L = LinearTransition.springify().damping(20).stiffness(120);
+const L = LinearTransition.duration(300);
 
 function Section({ title, small, onPress }: { title: string; small: string; onPress?: () => void }) {
   const { colors } = useTheme();

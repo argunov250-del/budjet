@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, LinearTransition, ZoomIn } from 'react-native-reanimated';
+import { Pressable, Text, View } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { SelChip } from '../../screens/shared/ui';
-import { FadeInUp, Icon, NeuButton, NeuCard, Screen, SuccessOverlay, formatRub, tap, useToast } from '../../components';
+import { FadeInUp, NeuInput, emergeEntering, Icon, NeuButton, NeuCard, Screen, SuccessOverlay, formatRub, tap, useToast } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
 import { useBudgetStore } from '../../store';
 import { parseQuickInput, type ParsedItem } from '../../logic/budget';
@@ -50,10 +50,7 @@ export default function AiScreen() {
       </FadeInUp>
       <FadeInUp index={1}>
         <NeuCard>
-          <TextInput
-            value={text} onChangeText={setText} multiline placeholder="кофе 250, такси 480" placeholderTextColor={colors.text2}
-            style={{ minHeight: 84, textAlignVertical: 'top', fontFamily: fontFamily.semibold, fontSize: 16, color: colors.navy, padding: 14, borderRadius: 20, backgroundColor: colors.bg, boxShadow: shadows.inset }}
-          />
+          <NeuInput value={text} onChangeText={setText} multiline placeholder="кофе 250, такси 480" style={{ minHeight: 84 }} />
           <NeuButton title="Разобрать" onPress={parse} disabled={!text.trim()} full style={{ marginTop: 14 }} />
         </NeuCard>
       </FadeInUp>
@@ -66,13 +63,13 @@ export default function AiScreen() {
         </FadeInUp>
       )}
       {items.length > 0 && (
-        <Animated.View entering={FadeInDown.springify().damping(20)} layout={LinearTransition.springify().damping(20)}>
+        <Animated.View entering={emergeEntering(0)} layout={LinearTransition.duration(300)}>
           <NeuCard>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
               {items.map((it, i) => {
                 const c = catOf(it.categoryId);
                 return (
-                  <Animated.View key={i} entering={ZoomIn.delay(i * 90).springify().damping(20)} layout={LinearTransition.springify().damping(20)}>
+                  <Animated.View key={i} entering={emergeEntering(i)} layout={LinearTransition.duration(300)}>
                     <Pressable onPress={() => { tap(); setPicking(picking === i ? null : i); }}
                       style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingLeft: 10, paddingRight: 13, borderRadius: 99, backgroundColor: colors.bg, boxShadow: picking === i ? shadows.inset : shadows.raisedS }}>
                       <Icon name={c?.icon ?? 'tag'} size={15} color={c?.color ?? colors.text2} />
@@ -83,7 +80,7 @@ export default function AiScreen() {
               })}
             </View>
             {picking !== null && (
-              <Animated.View entering={FadeIn} style={{ marginTop: 14, gap: 8 }}>
+              <Animated.View entering={emergeEntering(0)} style={{ marginTop: 14, gap: 8 }}>
                 <Text style={{ fontFamily: fontFamily.bold, fontSize: 12, color: colors.text2 }}>Категория для «{items[picking]?.note}»</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {categories.map((c) => {

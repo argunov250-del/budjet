@@ -15,10 +15,10 @@ export function AccountsStrip({ accounts, txs, onAdd }: { accounts: Account[]; t
         <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 17, color: colors.navy }}>Счета</Text>
         <AnimatedNumber value={total} duration={900} prefix="Всего " suffix=" ₽" style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.text2 }} />
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingVertical: 8 }} style={{ marginHorizontal: -16 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingVertical: 8, alignItems: 'flex-start' }} style={{ marginHorizontal: -16, flexGrow: 0 }}>
         <View style={{ width: 12 }} />
         {active.map((a) => (
-          <NeuCard key={a.id} radius={24} padding={14} small style={{ width: 150, gap: 6 }}>
+          <NeuCard key={a.id} radius={24} padding={14} small style={{ width: 150, height: 110, gap: 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <View style={{ width: 28, height: 28, borderRadius: 10, alignItems: 'center', justifyContent: 'center', boxShadow: shadows.insetS }}>
                 <Text style={{ fontSize: 14 }}>{a.icon}</Text>
@@ -32,7 +32,7 @@ export function AccountsStrip({ accounts, txs, onAdd }: { accounts: Account[]; t
           </NeuCard>
         ))}
         <PressScale onPress={onAdd} label="Добавить счёт"
-          style={{ width: 70, height: '100%', minHeight: 96, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, boxShadow: shadows.inset }}>
+          style={{ width: 70, height: 110, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, boxShadow: shadows.inset }}>
           <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 24, color: colors.text2 }}>＋</Text>
         </PressScale>
         <View style={{ width: 12 }} />

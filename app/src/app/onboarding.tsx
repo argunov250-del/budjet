@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Text, View } from 'react-native';
-import Animated, { FadeInRight, FadeOutLeft, ZoomIn } from 'react-native-reanimated';
-import { FadeInUp, NeuButton, NeuCard, Screen, success } from '../components';
+import Animated, { FadeOutLeft } from 'react-native-reanimated';
+import { FadeInUp, emergeEntering, NeuButton, NeuCard, Screen, success } from '../components';
 import { Field, digits } from '../screens/goals/Field';
 import { SelChip } from '../screens/shared/ui';
 import { ACCOUNT_TYPES, useBudgetStore, type AccountType } from '../store';
@@ -51,7 +51,7 @@ export default function Onboarding() {
     <Screen>
       <FadeInUp index={0}><View style={{ paddingTop: 24 }}>{dots}</View></FadeInUp>
       {step === 0 && (
-        <Animated.View key="s0" entering={FadeInRight.springify().damping(20)} exiting={FadeOutLeft.duration(180)}>
+        <Animated.View key="s0" entering={emergeEntering(0)} exiting={FadeOutLeft.duration(180)}>
           <NeuCard>
             {h1('Добро пожаловать в Ровно')}
             {p('Начнём со счёта, на котором вы держите деньги.')}
@@ -68,7 +68,7 @@ export default function Onboarding() {
         </Animated.View>
       )}
       {step === 1 && (
-        <Animated.View key="s1" entering={FadeInRight.springify().damping(20)} exiting={FadeOutLeft.duration(180)}>
+        <Animated.View key="s1" entering={emergeEntering(0)} exiting={FadeOutLeft.duration(180)}>
           <NeuCard>
             {h1('Бюджет на месяц')}
             {p('Из него считается лимит на каждый день. Можно изменить позже в настройках.')}
@@ -86,9 +86,9 @@ export default function Onboarding() {
         </Animated.View>
       )}
       {step === 2 && (
-        <Animated.View key="s2" entering={FadeInRight.springify().damping(20)} exiting={FadeOutLeft.duration(180)}>
+        <Animated.View key="s2" entering={emergeEntering(0)} exiting={FadeOutLeft.duration(180)}>
           <NeuCard style={{ alignItems: 'center' }}>
-            <Animated.View entering={ZoomIn.delay(150).springify().damping(20)}
+            <Animated.View entering={emergeEntering(2)}
               style={{ width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, boxShadow: shadows.raised }}>
               <Text style={{ fontSize: 38 }}>🎉</Text>
             </Animated.View>

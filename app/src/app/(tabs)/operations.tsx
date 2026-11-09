@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { LinearTransition, useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AnimatedNumber, FadeInUp, Icon, NeuCard, Screen, formatRub, tap, useToast } from '../../components';
+import { AnimatedNumber, FadeInUp, NeuInput, Icon, NeuCard, Screen, formatRub, tap, useToast } from '../../components';
 import { MAX_WIDTH, fontFamily, useTheme } from '../../theme';
 import { useBudgetStore, type Category } from '../../store';
 import { dayKey, isExpense, monthOps } from '../../logic/budget';
@@ -130,17 +130,14 @@ export default function OperationsScreen() {
           </View>
         </FadeInUp>
         <FadeInUp index={3}>
-          <TextInput
-            value={q} onChangeText={setQ} placeholder="Поиск по операциям" placeholderTextColor={colors.text2}
-            style={{ fontFamily: fontFamily.semibold, fontSize: 16, color: colors.navy, paddingVertical: 13, paddingHorizontal: 18, borderRadius: 20, backgroundColor: colors.bg, boxShadow: shadows.inset }}
-          />
+          <NeuInput value={q} onChangeText={setQ} placeholder="Поиск по операциям" small />
         </FadeInUp>
         <NeuCard padding={16}>
           {groups.length === 0 ? (
             <Text style={{ fontFamily: fontFamily.semibold, fontSize: 13.5, color: colors.text2, textAlign: 'center', paddingVertical: 20 }}>{transactions.length === 0 ? 'Операций пока нет. Нажмите «+», чтобы добавить первую' : 'Ничего не найдено'}</Text>
           ) : (
             groups.map(([k, g], gi) => (
-              <Animated.View key={k} layout={LinearTransition.springify().damping(20)} style={{ marginTop: gi ? 8 : 0 }}>
+              <Animated.View key={k} layout={LinearTransition.duration(300)} style={{ marginTop: gi ? 8 : 0 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingVertical: 6 }}>
                   <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.text2 }}>{dayTitle(g.date, now)}</Text>
                   {g.sum > 0 && <AnimatedNumber value={g.sum} duration={700} format={(n) => formatRub(n).replace('−', '')} prefix="−" style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.navy }} />}

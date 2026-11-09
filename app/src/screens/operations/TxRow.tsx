@@ -1,9 +1,9 @@
 import { Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  FadeInDown, LinearTransition, SlideOutLeft, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming,
+  LinearTransition, SlideOutLeft, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from 'react-native-reanimated';
-import { Icon, tap } from '../../components';
+import { Icon, emergeEntering, tap } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
 import type { Account, Category, Transaction } from '../../store';
 import { describeTx } from '../shared/txInfo';
@@ -30,9 +30,9 @@ export function TxRow({ tx, categories, accounts, onDelete, index }: { tx: Trans
   const hm = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
   return (
     <Animated.View
-      entering={FadeInDown.delay(Math.min(index, 8) * 40).springify().damping(20)}
+      entering={emergeEntering(Math.min(index, 8))}
       exiting={SlideOutLeft.duration(220)}
-      layout={LinearTransition.springify().damping(20)}
+      layout={LinearTransition.duration(300)}
       style={{ justifyContent: 'center' }}
     >
       <Animated.View style={[{ position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center', paddingRight: 22 }, bin]}>

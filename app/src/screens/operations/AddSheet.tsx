@@ -5,7 +5,7 @@ import { BottomSheet, Icon, NeuButton, SuccessOverlay, formatNumber, tap } from 
 import { fontFamily, useTheme } from '../../theme';
 import { incomeCategories, type Account, type Category, type TxKind } from '../../store';
 import { Segmented, SelChip } from '../shared/ui';
-import { TextInput } from 'react-native';
+import { NeuInput } from '../../components/NeuInput';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
 const SPRING = { damping: 20, stiffness: 140, mass: 0.7 };
@@ -140,10 +140,7 @@ export function AddSheet({ visible, onClose, categories, accounts, defaultAccoun
             {cats.map((c) => <CatTile key={c.id} c={c} active={c.id === curCat} onPress={() => (kind === 'income' ? setIncCat(c.id) : setCat(c.id))} />)}
           </View>
         )}
-        <TextInput
-          value={note} onChangeText={setNote} placeholder="Заметка" placeholderTextColor={colors.text2}
-          style={{ fontFamily: fontFamily.semibold, fontSize: 16, color: colors.navy, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 20, backgroundColor: colors.bg, boxShadow: shadows.inset }}
-        />
+        <NeuInput value={note} onChangeText={setNote} placeholder="Заметка" small />
         <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
           <Icon name="calendar" size={18} color={colors.text2} />
           <SelChip label="Сегодня" active={!yesterday} onPress={() => setYesterday(false)} />
