@@ -1,14 +1,15 @@
 import {
-  categorySpent, dailyLimit, monthSeries, parseQuickInput, spentToday, leftToday, streak, daysLeft, daysInMonth,
+  accountBalance, totalBalance, monthBudget, categorySpent, dailyLimit, monthSeries, parseQuickInput, spentToday, leftToday, streak, daysLeft, daysInMonth,
 } from '../budget';
 import type { Transaction } from '../../store/types';
-import { seedCategories } from '../../store/seed';
+import { defaultCategories as seedCategories } from '../../store/defaults';
+import { emptyData, migrateState, parseImport, exportJson } from '../../store/data';
 
-const settings = { monthlyIncome: 70000, payday: 5, fixedExpenses: 40000 }; // budget 30000, Nov = 30 days => 1000/day
+const settings = { monthlyIncome: 70000, payday: 5, fixedExpenses: 40000, monthlyBudget: 0, theme: 'system' as const }; // budget 30000, Nov = 30 days => 1000/day
 const now = new Date(2026, 10, 8, 12, 0); // 8 Nov, 23 days left incl. today
 let n = 0;
 const tx = (day: number, amount: number, categoryId = 'cafe', month = 10): Transaction => ({
-  id: `t${n++}`, amount, categoryId, note: 'x', date: new Date(2026, month, day, 10, 0).toISOString(),
+  id: `t${n++}`, kind: 'expense', accountId: 'a1', amount, categoryId, note: 'x', date: new Date(2026, month, day, 10, 0).toISOString(),
 });
 
 test('days helpers', () => {
@@ -56,7 +57,7 @@ test('monthSeries: cumulative and ideal pace', () => {
 });
 
 test('categorySpent', () => {
-  const r = categorySpent([tx(2, 8000, 'cafe'), tx(3, 100, 'kids')], seedCategories, now);
+  const r = categorySpent([tx(2, 8000, 'cafe'), tx(3, 100, 'kids')], seedCategories.map((c) => ({ ...c, monthlyLimit: 7000 })), now);
   const cafe = r.find((x) => x.category.id === 'cafe')!;
   expect(cafe.spent).toBe(8000);
   expect(cafe.over).toBe(true);
@@ -86,4 +87,61 @@ test('parseQuickInput', () => {
   ]);
   expect(parseQuickInput('что-то 100')[0].categoryId).toBe('other');
   expect(parseQuickInput('')).toEqual([]);
+});
+
+const acc = (id: string, initialBalance: number, archived = false) => ({
+  id, name: id, type: 'card' as const, initialBalance, color: '#000', icon: '💳', archived,
+});
+const op = (kind: 'expense' | 'income' | 'transfer', amount: number, accountId: string, toAccountId?: string, day = 8): Transaction => ({
+  id: `o${n++}`, kind, amount, categoryId: kind === 'transfer' ? '' : 'other', note: '', date: new Date(2026, 10, day, 9).toISOString(), accountId, toAccountId,
+});
+
+test('account balance: initial + income - expense, transfers in/out', () => {
+  const a = acc('a1', 1000), b = acc('b1', 0);
+  const txs = [op('income', 500, 'a1'), op('expense', 200, 'a1'), op('transfer', 300, 'a1', 'b1'), op('expense', 50, 'b1')];
+  expect(accountBalance(a, txs)).toBe(1000);
+  expect(accountBalance(b, txs)).toBe(250);
+  expect(totalBalance([a, b], txs)).toBe(1250); // transfers are neutral
+  expect(totalBalance([a, acc('c', 999, true)], txs)).toBe(1000); // archived excluded
+});
+
+test('budget counts only expenses', () => {
+  const txs = [op('income', 90000, 'a1'), op('transfer', 5000, 'a1', 'b1'), op('expense', 100, 'a1')];
+  expect(spentToday(txs, now)).toBe(100);
+  expect(monthSeries(txs, settings, now).total).toBe(100);
+  expect(streak(txs, settings, now)).toBeGreaterThanOrEqual(1);
+});
+
+test('monthBudget: explicit budget wins, else income - fixed', () => {
+  expect(monthBudget({ ...settings, monthlyBudget: 12345 })).toBe(12345);
+  expect(monthBudget(settings)).toBe(30000);
+  expect(monthBudget({ ...settings, monthlyIncome: 0, fixedExpenses: 0 })).toBe(0);
+});
+
+test('empty state: no NaN, no crash', () => {
+  const empty = { ...settings, monthlyIncome: 0, fixedExpenses: 0 };
+  const d = dailyLimit([], empty, now);
+  expect(d.limit).toBe(0);
+  expect(Number.isNaN(d.leftToday)).toBe(false);
+  const s = monthSeries([], empty, now);
+  expect(s.total).toBe(0);
+  expect(Number.isNaN(s.diff)).toBe(false);
+  expect(streak([], empty, now)).toBe(0);
+  expect(categorySpent([], seedCategories, now).every((c) => c.spent === 0 && c.ratio === 0)).toBe(true);
+  expect(totalBalance([], [])).toBe(0);
+});
+
+test('store data: migrate wipes old demo state; export/import roundtrip', () => {
+  const old = { transactions: [{ id: 'seed-1', amount: 5, categoryId: 'cafe', note: '', date: new Date().toISOString() }] };
+  const m = migrateState(old, 0);
+  expect(m.transactions).toHaveLength(0);
+  expect(m.accounts).toHaveLength(0);
+  const d = emptyData();
+  d.accounts = [acc('a1', 10)];
+  d.transactions = [op('income', 5, 'a1')];
+  const back = parseImport(exportJson(d))!;
+  expect(back.accounts).toHaveLength(1);
+  expect(back.transactions).toHaveLength(1);
+  expect(parseImport('not json')).toBeNull();
+  expect(parseImport('{"accounts":1}')).toBeNull();
 });

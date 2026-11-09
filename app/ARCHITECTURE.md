@@ -9,10 +9,11 @@ Note: `npx expo install` is blocked by the sandbox proxy; versions were pinned m
 - `shadows`: raised, raisedS, inset, insetS, sheet, pill, pillPressed, toast, avatar (RN `boxShadow` strings). `raised(colors,{radius,padding,small})`, `pressed(...)` return ViewStyle.
 - `gradients` (ring, flame, avatar), `radii`, `spacing`, `MAX_WIDTH=420`, `fontFamily` (regular/medium/semibold/bold/extrabold = Manrope_*), `typography` presets (tabular-nums included).
 
-## store (`src/store`, zustand + AsyncStorage persist key `rovno-store-v1`)
-`useBudgetStore()` state: `categories, transactions, goals, settings`. Actions: `addTransaction({amount,categoryId,note,date?})` (amount positive), `removeTransaction(id)`, `addGoal({name,target,saved?,emoji?})`, `depositToGoal(id, amount)`, `updateSettings(partial)`, `reset()` (re-seed).
-Types: Category{id,name,icon:IconName,color,monthlyLimit}, Transaction{id,amount,categoryId,note,date ISO}, Goal, Settings{monthlyIncome,payday,fixedExpenses}.
-Category ids: groceries, kids, cafe, transport, home, health, fun, subs, other ("Другое", fallback). Seed: income 95000, fixed 40000 (daily budget = income - fixed), ~25 tx in current month (clamped to today), 2 goals.
+## store (`src/store`, zustand persist key `rovno-store-v1`, version 2; `migrate` wipes pre-v2 demo state)
+Empty by default (no seed). State: `accounts, categories(expense), transactions, goals, settings, lastAccountId`. `useHydrated()` gates root render; root `_layout` uses `Stack.Protected`: no accounts -> `onboarding`, else `(tabs)` + `settings`.
+Actions: `addTransaction({kind?,amount,categoryId?,note,date?,accountId?,toAccountId?})` (accountId defaults to last used), `removeTransaction`, `addAccount/updateAccount/setAccountArchived`, `setCategoryLimit`, `addGoal`, `depositToGoal`, `updateSettings`, `replaceData` (import), `reset()` (-> empty).
+Types: Account{id,name,type,initialBalance,color,icon(emoji),archived}, Transaction{kind:'expense'|'income'|'transfer',accountId,toAccountId?}, Settings{monthlyIncome,payday,fixedExpenses,monthlyBudget(0=income-fixed),theme}. `incomeCategories` const (not in state). `data.ts`: emptyData/sanitizeData/exportJson/parseImport/migrateState.
+NOTE: `monthTransactions`/`spentOnDay`/`dailyLimit` count EXPENSES only; use `monthOps` for all kinds. `accountBalance`, `totalBalance` in logic.
 
 ## logic (`src/logic/budget.ts`, pure; every fn takes `now: Date`)
 - `dailyLimit(txs, settings, now)` -> `{limit, base, savedYesterday, monthBudget, remaining, daysLeft, spentToday, leftToday}`; limit=(budget - spent before today)/daysLeft(incl. today); base = yesterday's limit; base+savedYesterday=limit.

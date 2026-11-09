@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, LinearTransition, ZoomIn, useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
+import { SelChip } from '../../screens/shared/ui';
 import { FadeInUp, Icon, NeuButton, NeuCard, Screen, formatRub, success, tap, useToast } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
 import { useBudgetStore } from '../../store';
@@ -11,7 +12,10 @@ const SAMPLES = ['кофе 250, такси 480', 'продукты 1850', 'ап�
 export default function AiScreen() {
   const { colors, shadows } = useTheme();
   const toast = useToast();
-  const { categories, addTransaction } = useBudgetStore();
+  const { categories, accounts, lastAccountId, addTransaction } = useBudgetStore();
+  const active = accounts.filter((a) => !a.archived);
+  const [accSel, setAccSel] = useState<string | null>(null);
+  const accountId = active.find((a) => a.id === accSel)?.id ?? active.find((a) => a.id === lastAccountId)?.id ?? active[0]?.id;
   const [text, setText] = useState('');
   const [items, setItems] = useState<ParsedItem[]>([]);
   const [picking, setPicking] = useState<number | null>(null);
@@ -28,7 +32,7 @@ export default function AiScreen() {
     if (!r.length) toast.show('Не удалось разобрать. Пример: кофе 250');
   };
   const addAll = () => {
-    items.forEach((it) => addTransaction({ amount: it.amount, categoryId: it.categoryId, note: it.note }));
+    items.forEach((it) => addTransaction({ kind: 'expense', amount: it.amount, categoryId: it.categoryId, note: it.note, accountId }));
     success();
     setDone(true);
     check.value = withSequence(withSpring(1.25, { damping: 8, stiffness: 180 }), withSpring(1, { damping: 12 }));
@@ -54,6 +58,14 @@ export default function AiScreen() {
           <NeuButton title="Разобрать" onPress={parse} disabled={!text.trim()} full style={{ marginTop: 14 }} />
         </NeuCard>
       </FadeInUp>
+      {active.length > 1 && (
+        <FadeInUp index={1}>
+          <Text style={{ fontFamily: fontFamily.bold, fontSize: 12, color: colors.text2, marginBottom: 8 }}>Списать со счёта</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {active.map((a) => <SelChip key={a.id} label={`${a.icon} ${a.name}`} active={a.id === accountId} onPress={() => setAccSel(a.id)} />)}
+          </View>
+        </FadeInUp>
+      )}
       {items.length > 0 && (
         <Animated.View entering={FadeInDown.springify().damping(16)} layout={LinearTransition.springify()}>
           <NeuCard>
@@ -97,7 +109,7 @@ export default function AiScreen() {
                 <Icon name="check" size={28} color="#fff" strokeWidth={3} />
               </Animated.View>
             ) : (
-              <NeuButton title="Добавить все" onPress={addAll} full />
+              <NeuButton title="Добавить все" onPress={addAll} disabled={!accountId} full />
             )}
           </NeuCard>
         </Animated.View>

@@ -51,7 +51,7 @@ export function opDateLabel(iso: string, now: Date) {
   return `${WEEKDAYS[d.getDay()]}, ${hhmm(d)}`;
 }
 
-export type Suggestion = { note: string; amount: number; categoryId: string; date: string };
+export type Suggestion = { note: string; amount: number; categoryId: string; date: string; accountId: string };
 export type FillInfo = { yesterdayLabel: string; recorded: number; total: number; missing: Suggestion[] };
 
 /**
@@ -65,6 +65,7 @@ export function fillSuggestions(txs: Transaction[], now: Date): FillInfo | null 
   const winStart = addDays(today, -14);
   const groups = new Map<string, { days: Set<string>; last?: Transaction; onY: boolean }>();
   for (const t of txs) {
+    if ((t.kind ?? 'expense') !== 'expense') continue;
     const d = new Date(t.date);
     if (d < winStart) continue;
     const key = t.note.trim().toLowerCase();
@@ -85,7 +86,7 @@ export function fillSuggestions(txs: Transaction[], now: Date): FillInfo | null 
     if (g.onY) { recorded++; return; }
     const lt = new Date(g.last.date);
     const date = new Date(y.getFullYear(), y.getMonth(), y.getDate(), lt.getHours(), lt.getMinutes());
-    missing.push({ note: g.last.note, amount: g.last.amount, categoryId: g.last.categoryId, date: date.toISOString() });
+    missing.push({ note: g.last.note, amount: g.last.amount, categoryId: g.last.categoryId, date: date.toISOString(), accountId: g.last.accountId });
   });
   if (!missing.length) return null;
   const yl = WEEKDAYS[y.getDay()];

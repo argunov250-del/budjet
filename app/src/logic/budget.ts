@@ -1,4 +1,4 @@
-import type { Category, Settings, Transaction } from '../store/types';
+import type { Account, Category, Settings, Transaction } from '../store/types';
 
 const DAY = 86400000;
 
@@ -10,18 +10,50 @@ export const daysInMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth() +
 export const daysLeft = (d: Date) => daysInMonth(d) - d.getDate() + 1;
 export const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
-const sum = (txs: Transaction[]) => txs.reduce((a, t) => a + t.amount, 0);
+export const isExpense = (t: Transaction) => (t.kind ?? 'expense') === 'expense';
+const sum = (txs: Transaction[]) => txs.reduce((a, t) => a + (isExpense(t) ? t.amount : 0), 0);
 const inMonth = (t: Transaction, now: Date) => {
   const d = new Date(t.date);
   return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
 };
 
+/** EXPENSES of the month (incomes and transfers excluded). */
 export function monthTransactions(txs: Transaction[], now: Date) {
+  return txs.filter((t) => isExpense(t) && inMonth(t, now));
+}
+
+/** all operations (any kind) of the month */
+export function monthOps(txs: Transaction[], now: Date) {
   return txs.filter((t) => inMonth(t, now));
 }
 
+/** Monthly spending budget: explicit setting, else income - fixed expenses. 0 if nothing is configured. */
 export function monthBudget(s: Settings) {
-  return Math.max(0, s.monthlyIncome - s.fixedExpenses);
+  if ((s.monthlyBudget ?? 0) > 0) return s.monthlyBudget;
+  return Math.max(0, (s.monthlyIncome ?? 0) - (s.fixedExpenses ?? 0));
+}
+
+/** initial + incomes - expenses + transfers in - transfers out */
+export function accountBalance(acc: Account, txs: Transaction[]): number {
+  let b = acc.initialBalance;
+  for (const t of txs) {
+    const kind = t.kind ?? 'expense';
+    if (kind === 'transfer') {
+      if (t.accountId === acc.id) b -= t.amount;
+      if (t.toAccountId === acc.id) b += t.amount;
+    } else if (t.accountId === acc.id) b += kind === 'income' ? t.amount : -t.amount;
+  }
+  return b;
+}
+
+/** total over non-archived accounts */
+export function totalBalance(accounts: Account[], txs: Transaction[]): number {
+  return accounts.filter((a) => !a.archived).reduce((s, a) => s + accountBalance(a, txs), 0);
+}
+
+/** income received in the month */
+export function monthIncome(txs: Transaction[], now: Date): number {
+  return monthOps(txs, now).filter((t) => t.kind === 'income').reduce((s, t) => s + t.amount, 0);
 }
 
 /** spent on the calendar day of `day` */
@@ -130,8 +162,9 @@ export function categorySpent(txs: Transaction[], categories: Category[], now: D
  * Today counts only if currently within the limit. Days before the first transaction are not counted.
  */
 export function streak(txs: Transaction[], settings: Settings, now: Date): number {
-  if (!txs.length) return 0;
-  const first = startOfDay(new Date(Math.min(...txs.map((t) => new Date(t.date).getTime()))));
+  const ex = txs.filter(isExpense);
+  if (!ex.length) return 0;
+  const first = startOfDay(new Date(Math.min(...ex.map((t) => new Date(t.date).getTime()))));
   let count = 0;
   let day = startOfDay(now);
   for (let i = 0; i < 400 && day >= first; i++) {

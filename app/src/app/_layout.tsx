@@ -7,19 +7,22 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '../components/Toast';
+import { useHydrated, useBudgetStore } from '../store';
 import { useTheme } from '../theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const { colors, isDark } = useTheme();
+  const hydrated = useHydrated();
+  const hasAccounts = useBudgetStore((s) => s.accounts.length > 0);
   const [loaded, error] = useFonts({
     Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, Manrope_800ExtraBold,
   });
   useEffect(() => {
     if (loaded || error) SplashScreen.hideAsync().catch(() => {});
   }, [loaded, error]);
-  if (!loaded && !error) return null;
+  if ((!loaded && !error) || !hydrated) return null;
 
   const navTheme = {
     dark: isDark,
@@ -37,7 +40,15 @@ export default function RootLayout() {
       <ThemeProvider value={navTheme}>
         <ToastProvider>
           <StatusBar style={isDark ? 'light' : 'dark'} />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+            <Stack.Protected guard={hasAccounts}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
+            </Stack.Protected>
+            <Stack.Protected guard={!hasAccounts}>
+              <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+            </Stack.Protected>
+          </Stack>
         </ToastProvider>
       </ThemeProvider>
     </SafeAreaProvider>

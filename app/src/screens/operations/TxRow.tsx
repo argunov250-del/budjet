@@ -3,13 +3,15 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   FadeInDown, LinearTransition, SlideOutLeft, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from 'react-native-reanimated';
-import { Icon, formatRub, tap } from '../../components';
+import { Icon, tap } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
-import type { Category, Transaction } from '../../store';
+import type { Account, Category, Transaction } from '../../store';
+import { describeTx } from '../shared/txInfo';
 
 const THRESH = -96;
 
-export function TxRow({ tx, category, onDelete, index }: { tx: Transaction; category?: Category; onDelete: () => void; index: number }) {
+export function TxRow({ tx, categories, accounts, onDelete, index }: { tx: Transaction; categories: Category[]; accounts: Account[]; onDelete: () => void; index: number }) {
+  const v = describeTx(tx, categories, accounts);
   const { colors, shadows } = useTheme();
   const x = useSharedValue(0);
   const fire = () => { tap(); onDelete(); };
@@ -39,13 +41,13 @@ export function TxRow({ tx, category, onDelete, index }: { tx: Transaction; cate
       <GestureDetector gesture={pan}>
         <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, backgroundColor: colors.bg }, row]}>
           <View style={{ width: 42, height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, boxShadow: shadows.inset }}>
-            <Icon name={category?.icon ?? 'tag'} size={20} color={category?.color ?? colors.text2} />
+            <Icon name={v.icon} size={20} color={v.iconColor ?? colors.text2} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text numberOfLines={1} style={{ fontFamily: fontFamily.bold, fontSize: 14.5, color: colors.navy }}>{tx.note || category?.name}</Text>
-            <Text style={{ fontFamily: fontFamily.semibold, fontSize: 12, color: colors.text2 }}>{category?.name} · {hm}</Text>
+            <Text numberOfLines={1} style={{ fontFamily: fontFamily.bold, fontSize: 14.5, color: colors.navy }}>{v.title}</Text>
+            <Text style={{ fontFamily: fontFamily.semibold, fontSize: 12, color: colors.text2 }}>{v.sub} · {hm}</Text>
           </View>
-          <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 14.5, color: colors.navy, fontVariant: ['tabular-nums'] }}>−{formatRub(tx.amount).replace('−', '')}</Text>
+          <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 14.5, color: v.isIncome ? colors.ok : colors.navy, fontVariant: ['tabular-nums'] }}>{v.sign}{v.amount}</Text>
         </Animated.View>
       </GestureDetector>
     </Animated.View>

@@ -17,7 +17,7 @@ function Tile({ item, index, onPress }: { item: CategorySpent; index: number; on
         </View>
         <Text style={{ marginTop: 4, marginBottom: 2, fontFamily: fontFamily.semibold, fontSize: 13, color: colors.text2 }} numberOfLines={1}>
           <AnimatedNumber value={item.spent} style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.navy }} />
-          {` / ${formatNumber(item.category.monthlyLimit)} ₽`}
+          {item.category.monthlyLimit > 0 ? ` / ${formatNumber(item.category.monthlyLimit)} ₽` : ' ₽'}
         </Text>
         <ProgressBar value={item.ratio} delay={500 + index * 54} />
       </NeuCard>

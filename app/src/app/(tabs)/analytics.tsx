@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Chip, FadeInUp, Icon, NeuButton, NeuCard, ProgressBar, Screen, formatNumber, formatRub, useToast } from '../../components';
-import { addDays, daysInMonth, monthBudget, startOfDay } from '../../logic/budget';
+import { addDays, daysInMonth, isExpense, monthBudget, startOfDay } from '../../logic/budget';
 import { Bars, type BarItem } from '../../screens/analytics/Bars';
 import { Donut } from '../../screens/analytics/Donut';
 import { Field, digits } from '../../screens/goals/Field';
@@ -14,7 +14,8 @@ const sum = (a: { amount: number }[]) => a.reduce((s, t) => s + t.amount, 0);
 export default function AnalyticsScreen() {
   const { colors, shadows } = useTheme();
   const toast = useToast();
-  const txs = useBudgetStore((s) => s.transactions);
+  const allTxs = useBudgetStore((s) => s.transactions);
+  const txs = useMemo(() => allTxs.filter(isExpense), [allTxs]);
   const categories = useBudgetStore((s) => s.categories);
   const settings = useBudgetStore((s) => s.settings);
   const updateSettings = useBudgetStore((s) => s.updateSettings);
@@ -53,7 +54,7 @@ export default function AnalyticsScreen() {
       g.total += t.amount; g.count += 1; groups.set(k, g);
     });
     const top = [...groups.values()].sort((a, b) => b.total - a.total).slice(0, 3);
-    const forecast = (total / Math.max(1, today)) * n;
+    const forecast = Number.isFinite(total) ? (total / Math.max(1, today)) * n : 0;
     return { total, prevTotal, hasPrev: prev.length > 0, slices, dayBars, weekBars, top, forecast, today, n };
   }, [txs, categories, now]);
 

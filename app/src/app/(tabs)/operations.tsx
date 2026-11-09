@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, { LinearTransition, useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnimatedNumber, FadeInUp, Icon, NeuCard, Screen, formatRub, tap, useToast } from '../../components';
 import { MAX_WIDTH, fontFamily, useTheme } from '../../theme';
 import { useBudgetStore, type Category } from '../../store';
-import { dayKey, monthTransactions } from '../../logic/budget';
+import { dayKey, isExpense, monthOps } from '../../logic/budget';
+import { describeTx } from '../../screens/shared/txInfo';
+import { SelChip } from '../../screens/shared/ui';
 import { AddSheet } from '../../screens/operations/AddSheet';
 import { TxRow } from '../../screens/operations/TxRow';
 
@@ -50,38 +52,41 @@ export default function OperationsScreen() {
   const { colors, shadows } = useTheme();
   const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { categories, transactions, addTransaction, removeTransaction } = useBudgetStore();
+  const { categories, transactions, accounts, lastAccountId, addTransaction, removeTransaction } = useBudgetStore();
+  const [acc, setAcc] = useState<string | null>(null);
   const [month, setMonth] = useState(() => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); });
   const [cat, setCat] = useState<string | null>(null);
   const [q, setQ] = useState('');
   const [sheet, setSheet] = useState(false);
   const now = new Date();
 
-  const monthTx = useMemo(() => monthTransactions(transactions, month), [transactions, month]);
+  const monthTx = useMemo(
+    () => monthOps(transactions, month).filter((t) => !acc || t.accountId === acc || t.toAccountId === acc),
+    [transactions, month, acc],
+  );
   const perCat = useMemo(() => {
     const m: Record<string, number> = {};
-    monthTx.forEach((t) => { m[t.categoryId] = (m[t.categoryId] ?? 0) + t.amount; });
+    monthTx.filter(isExpense).forEach((t) => { m[t.categoryId] = (m[t.categoryId] ?? 0) + t.amount; });
     return m;
   }, [monthTx]);
-  const total = monthTx.reduce((a, t) => a + t.amount, 0);
-  const catMap = useMemo(() => Object.fromEntries(categories.map((c) => [c.id, c])), [categories]);
+  const total = monthTx.filter(isExpense).reduce((a, t) => a + t.amount, 0);
 
   const groups = useMemo(() => {
     const ql = q.trim().toLowerCase();
     const list = monthTx
       .filter((t) => !cat || t.categoryId === cat)
-      .filter((t) => !ql || t.note.toLowerCase().includes(ql) || (catMap[t.categoryId]?.name ?? '').toLowerCase().includes(ql))
+      .filter((t) => !ql || t.note.toLowerCase().includes(ql) || describeTx(t, categories, accounts).sub.toLowerCase().includes(ql))
       .sort((a, b) => +new Date(b.date) - +new Date(a.date));
     const g = new Map<string, { date: Date; items: typeof list; sum: number }>();
     list.forEach((t) => {
       const d = new Date(t.date);
       const k = dayKey(d);
       const e = g.get(k) ?? { date: d, items: [], sum: 0 };
-      e.items.push(t); e.sum += t.amount; g.set(k, e);
+      e.items.push(t); if (isExpense(t)) e.sum += t.amount; g.set(k, e);
       return;
     });
     return [...g.entries()];
-  }, [monthTx, cat, q, catMap]);
+  }, [monthTx, cat, q, categories, accounts]);
 
   const shift = (n: number) => { tap(); setMonth((m) => new Date(m.getFullYear(), m.getMonth() + n, 1)); };
   const isCurrent = month.getFullYear() === now.getFullYear() && month.getMonth() === now.getMonth();
@@ -108,6 +113,14 @@ export default function OperationsScreen() {
             {arrow(1, isCurrent)}
           </View>
         </FadeInUp>
+        {accounts.length > 1 && (
+          <FadeInUp index={2}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 4, paddingHorizontal: 2 }}>
+              <SelChip label="Все счета" active={acc === null} onPress={() => setAcc(null)} />
+              {accounts.map((a) => <SelChip key={a.id} label={`${a.icon} ${a.name}${a.archived ? ' (архив)' : ''}`} active={acc === a.id} onPress={() => setAcc(acc === a.id ? null : a.id)} />)}
+            </ScrollView>
+          </FadeInUp>
+        )}
         <FadeInUp index={2}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between' }}>
             <Tile label="Все" active={cat === null} amount={total} onPress={() => setCat(null)} />
@@ -124,16 +137,16 @@ export default function OperationsScreen() {
         </FadeInUp>
         <NeuCard padding={16}>
           {groups.length === 0 ? (
-            <Text style={{ fontFamily: fontFamily.semibold, fontSize: 13.5, color: colors.text2, textAlign: 'center', paddingVertical: 20 }}>Ничего не найдено</Text>
+            <Text style={{ fontFamily: fontFamily.semibold, fontSize: 13.5, color: colors.text2, textAlign: 'center', paddingVertical: 20 }}>{transactions.length === 0 ? 'Операций пока нет. Нажмите «+», чтобы добавить первую' : 'Ничего не найдено'}</Text>
           ) : (
             groups.map(([k, g], gi) => (
               <Animated.View key={k} layout={LinearTransition.springify().damping(18)} style={{ marginTop: gi ? 8 : 0 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingVertical: 6 }}>
                   <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.text2 }}>{dayTitle(g.date, now)}</Text>
-                  <AnimatedNumber value={g.sum} duration={700} format={(n) => formatRub(n).replace('−', '')} prefix="−" style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.navy }} />
+                  {g.sum > 0 && <AnimatedNumber value={g.sum} duration={700} format={(n) => formatRub(n).replace('−', '')} prefix="−" style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.navy }} />}
                 </View>
                 {g.items.map((t, i) => (
-                  <TxRow key={t.id} tx={t} index={i} category={catMap[t.categoryId]} onDelete={() => { removeTransaction(t.id); toast.show('Операция удалена'); }} />
+                  <TxRow key={t.id} tx={t} index={i} categories={categories} accounts={accounts} onDelete={() => { removeTransaction(t.id); toast.show('Операция удалена'); }} />
                 ))}
               </Animated.View>
             ))
@@ -147,8 +160,10 @@ export default function OperationsScreen() {
       </View>
       <AddSheet
         visible={sheet} onClose={() => setSheet(false)} categories={categories}
-        onSubmit={({ amount, categoryId, note, date }) => {
-          addTransaction({ amount, categoryId, note, date: date.toISOString() });
+        accounts={accounts} defaultAccountId={acc ?? lastAccountId}
+        onSubmit={({ date, ...rest }) => {
+          const amount = rest.amount;
+          addTransaction({ ...rest, date: date.toISOString() });
           setSheet(false);
           toast.show(`Добавлено: ${formatRub(amount)}`);
         }}

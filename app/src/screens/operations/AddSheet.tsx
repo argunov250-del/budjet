@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import { BottomSheet, Icon, NeuButton, formatNumber, success, tap } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
-import type { Category } from '../../store';
+import { incomeCategories, type Account, type Category, type TxKind } from '../../store';
+import { Segmented, SelChip } from '../shared/ui';
 import { TextInput } from 'react-native';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
@@ -43,62 +44,114 @@ function CatTile({ c, active, onPress }: { c: Category; active: boolean; onPress
   );
 }
 
-type Props = {
-  visible: boolean; onClose: () => void; categories: Category[];
-  onSubmit: (v: { amount: number; categoryId: string; note: string; date: Date }) => void;
+export type AddSubmit = {
+  kind: TxKind; amount: number; categoryId: string; note: string; date: Date; accountId: string; toAccountId?: string;
 };
 
-export function AddSheet({ visible, onClose, categories, onSubmit }: Props) {
+type Props = {
+  visible: boolean; onClose: () => void;
+  /** expense categories */
+  categories: Category[];
+  accounts: Account[];
+  defaultAccountId?: string | null;
+  onSubmit: (v: AddSubmit) => void;
+};
+
+const KINDS: { key: TxKind; label: string }[] = [
+  { key: 'expense', label: 'Расход' },
+  { key: 'income', label: 'Доход' },
+  { key: 'transfer', label: 'Перевод' },
+];
+
+export function AddSheet({ visible, onClose, categories, accounts, defaultAccountId, onSubmit }: Props) {
   const { colors, shadows } = useTheme();
+  const active = accounts.filter((a) => !a.archived);
+  const [kind, setKind] = useState<TxKind>('expense');
   const [digits, setDigits] = useState('');
   const [cat, setCat] = useState(categories[0]?.id ?? 'other');
+  const [incCat, setIncCat] = useState(incomeCategories[0].id);
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
   const [note, setNote] = useState('');
   const [yesterday, setYesterday] = useState(false);
   const pop = useSharedValue(1);
   const popSt = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
-  useEffect(() => { if (visible) { setDigits(''); setNote(''); setYesterday(false); } }, [visible]);
+  useEffect(() => {
+    if (!visible) return;
+    setDigits(''); setNote(''); setYesterday(false); setKind('expense');
+    const f = active.find((a) => a.id === defaultAccountId) ?? active[0];
+    setFrom(f?.id ?? '');
+    setTo(active.find((a) => a.id !== f?.id)?.id ?? '');
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const press = (k: string) => {
-    setDigits((d) => (k === '⌫' ? d.slice(0, -1) : d.length >= 7 ? d : (d + k).replace(/^0+/, '')));
+    setDigits((d) => (k === '⌫' ? d.slice(0, -1) : d.length >= 9 ? d : (d + k).replace(/^0+/, '')));
     pop.value = withSequence(withSpring(1.06, SPRING), withSpring(1, SPRING));
   };
   const amount = Number(digits || 0);
+  const canTransfer = active.length >= 2 && !!to && to !== from;
+  const valid = amount > 0 && !!from && (kind !== 'transfer' || canTransfer);
   const submit = () => {
-    if (!amount) return;
+    if (!valid) return;
     success();
     const d = new Date();
     if (yesterday) d.setDate(d.getDate() - 1);
-    onSubmit({ amount, categoryId: cat, note: note.trim(), date: d });
+    onSubmit({
+      kind, amount, note: note.trim(), date: d, accountId: from,
+      categoryId: kind === 'expense' ? cat : kind === 'income' ? incCat : '',
+      toAccountId: kind === 'transfer' ? to : undefined,
+    });
   };
-  const chip = (label: string, active: boolean, on: () => void) => (
-    <Pressable onPress={() => { tap(); on(); }} style={{ paddingVertical: 8, paddingHorizontal: 14, borderRadius: 99, backgroundColor: colors.bg, boxShadow: active ? shadows.inset : shadows.raisedS }}>
-      <Text style={{ fontFamily: fontFamily.bold, fontSize: 12.5, color: active ? colors.navy : colors.text2 }}>{label}</Text>
-    </Pressable>
-  );
+  const pickFrom = (id: string) => { setFrom(id); if (id === to) setTo(active.find((a) => a.id !== id)?.id ?? ''); };
+  const cats = kind === 'income' ? incomeCategories : categories;
+  const curCat = kind === 'income' ? incCat : cat;
+  const sign = kind === 'income' ? '+' : kind === 'expense' && amount ? '−' : '';
 
   return (
     <BottomSheet visible={visible} onClose={onClose}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 640 }} keyboardShouldPersistTaps="handled">
       <View style={{ gap: 14 }}>
-        <Animated.Text style={[{ fontFamily: fontFamily.extrabold, fontSize: 40, letterSpacing: -1, textAlign: 'center', color: amount ? colors.navy : colors.text2, fontVariant: ['tabular-nums'] }, popSt]}>
-          {formatNumber(amount)} ₽
+        <Segmented items={KINDS} value={kind} onChange={setKind} />
+        <Animated.Text style={[{ fontFamily: fontFamily.extrabold, fontSize: 40, letterSpacing: -1, textAlign: 'center', color: amount ? (kind === 'income' ? colors.ok : colors.navy) : colors.text2, fontVariant: ['tabular-nums'] }, popSt]}>
+          {sign}{formatNumber(amount)} ₽
         </Animated.Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-          {categories.map((c) => <CatTile key={c.id} c={c} active={c.id === cat} onPress={() => setCat(c.id)} />)}
+        <View style={{ gap: 6 }}>
+          <Text style={{ fontFamily: fontFamily.bold, fontSize: 12, color: colors.text2 }}>{kind === 'transfer' ? 'Со счёта' : 'Счёт'}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {active.map((a) => <SelChip key={a.id} label={`${a.icon} ${a.name}`} active={a.id === from} onPress={() => pickFrom(a.id)} />)}
+          </View>
         </View>
+        {kind === 'transfer' ? (
+          <View style={{ gap: 6 }}>
+            <Text style={{ fontFamily: fontFamily.bold, fontSize: 12, color: colors.text2 }}>На счёт</Text>
+            {active.length < 2 ? (
+              <Text style={{ fontFamily: fontFamily.medium, fontSize: 13, color: colors.text2 }}>Для перевода нужно минимум два счёта — добавьте второй в настройках.</Text>
+            ) : (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {active.filter((a) => a.id !== from).map((a) => <SelChip key={a.id} label={`${a.icon} ${a.name}`} active={a.id === to} onPress={() => setTo(a.id)} />)}
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+            {cats.map((c) => <CatTile key={c.id} c={c} active={c.id === curCat} onPress={() => (kind === 'income' ? setIncCat(c.id) : setCat(c.id))} />)}
+          </View>
+        )}
         <TextInput
           value={note} onChangeText={setNote} placeholder="Заметка" placeholderTextColor={colors.text2}
           style={{ fontFamily: fontFamily.semibold, fontSize: 16, color: colors.navy, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 20, backgroundColor: colors.bg, boxShadow: shadows.inset }}
         />
         <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
           <Icon name="calendar" size={18} color={colors.text2} />
-          {chip('Сегодня', !yesterday, () => setYesterday(false))}
-          {chip('Вчера', yesterday, () => setYesterday(true))}
+          <SelChip label="Сегодня" active={!yesterday} onPress={() => setYesterday(false)} />
+          <SelChip label="Вчера" active={yesterday} onPress={() => setYesterday(true)} />
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' }}>
           {KEYS.map((k, i) => <Key key={i} k={k} onPress={press} />)}
         </View>
-        <NeuButton title="Добавить" onPress={submit} disabled={!amount} full />
+        <NeuButton title="Добавить" onPress={submit} disabled={!valid} full />
       </View>
+      </ScrollView>
     </BottomSheet>
   );
 }
