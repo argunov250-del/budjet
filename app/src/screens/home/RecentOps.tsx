@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { FadeOut, LinearTransition, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { FadeOut, LinearTransition, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { Icon, NeuCard, emergeEntering, tap } from '../../components';
 import type { Account, Category, Transaction } from '../../store/types';
 import { describeTx } from '../shared/txInfo';
@@ -20,11 +21,11 @@ function OpRow({ tx, cats, accounts, first, now, animateIn, onDelete }: { tx: Tr
     .onUpdate((e) => {
       x.value = Math.min(0, e.translationX);
       const a = x.value < -THRESH;
-      if (a !== armed.value) { armed.value = a; if (a) runOnJS(tap)(); }
+      if (a !== armed.value) { armed.value = a; if (a) scheduleOnRN(tap); }
     })
     .onEnd((e) => {
       if (x.value < -THRESH || e.velocityX < -1100) {
-        x.value = withTiming(-520, { duration: 220 }, (fin) => { if (fin) runOnJS(onDelete)(tx.id); });
+        x.value = withTiming(-520, { duration: 220 }, (fin) => { 'worklet'; if (fin) scheduleOnRN(onDelete, tx.id); });
       } else {
         armed.value = false;
         x.value = withSpring(0, { damping: 20, stiffness: 140, mass: 0.8 });

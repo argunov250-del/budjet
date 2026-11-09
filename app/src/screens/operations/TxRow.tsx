@@ -1,8 +1,9 @@
 import { Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  LinearTransition, SlideOutLeft, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming,
+  LinearTransition, SlideOutLeft, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { Icon, emergeEntering, tap } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
 import type { Account, Category, Transaction } from '../../store';
@@ -21,7 +22,7 @@ export function TxRow({ tx, categories, accounts, onDelete, index }: { tx: Trans
     .onUpdate((e) => { x.value = Math.min(0, e.translationX); })
     .onEnd((e) => {
       if (e.translationX < THRESH) {
-        x.value = withTiming(-420, { duration: 180 }, (d) => { if (d) runOnJS(fire)(); });
+        x.value = withTiming(-420, { duration: 180 }, (d) => { 'worklet'; if (d) scheduleOnRN(fire); });
       } else x.value = withSpring(0, { damping: 20, stiffness: 140 });
     });
   const row = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));

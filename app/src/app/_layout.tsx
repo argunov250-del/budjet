@@ -6,13 +6,23 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ErrorBoundary, installGlobalErrorHandler } from '../components/ErrorBoundary';
 import { ToastProvider } from '../components/Toast';
 import { useHydrated, useBudgetStore } from '../store';
 import { useTheme } from '../theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+installGlobalErrorHandler();
 
 export default function RootLayout() {
+  return (
+    <ErrorBoundary>
+      <RootInner />
+    </ErrorBoundary>
+  );
+}
+
+function RootInner() {
   const { colors, isDark } = useTheme();
   const hydrated = useHydrated();
   const hasAccounts = useBudgetStore((s) => s.accounts.length > 0);

@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { BackHandler, Modal, Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MAX_WIDTH, useTheme } from '../theme';
 import { KScrollView, useKeyboardOverlap } from './keyboard';
@@ -20,6 +20,7 @@ export function BottomSheet({ visible, onClose, children, overlay }: Props) {
   const y = useSharedValue(height);
   const fade = useSharedValue(0);
 
+  const finishClose = useCallback(() => { setMounted(false); }, []);
   useEffect(() => {
     if (visible) {
       setMounted(true);
@@ -29,7 +30,8 @@ export function BottomSheet({ visible, onClose, children, overlay }: Props) {
     } else if (mounted) {
       fade.value = withTiming(0, { duration: 250 });
       y.value = withTiming(height, { duration: 300 }, (done) => {
-        if (done) scheduleClose();
+        'worklet';
+        if (done) scheduleOnRN(finishClose);
       });
     }
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -42,10 +44,9 @@ export function BottomSheet({ visible, onClose, children, overlay }: Props) {
   const pan = Gesture.Pan()
     .onUpdate((e) => { y.value = Math.max(0, e.translationY); })
     .onEnd((e) => {
-      if (e.translationY > 100 || e.velocityY > 800) runOnJS(onClose)();
+      if (e.translationY > 100 || e.velocityY > 800) scheduleOnRN(onClose);
       else y.value = withSpring(0, { damping: 17, stiffness: 140, mass: 0.9 });
     });
-  const scheduleClose = () => { setTimeoutJS(() => setMounted(false)); };
 
   const sheet = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
   const back = useAnimatedStyle(() => ({ opacity: fade.value }));
@@ -83,5 +84,3 @@ export function BottomSheet({ visible, onClose, children, overlay }: Props) {
     </Modal>
   );
 }
-
-function setTimeoutJS(fn: () => void) { setTimeout(fn, 0); }

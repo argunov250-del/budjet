@@ -2,6 +2,7 @@ import { Text, View } from 'react-native';
 import { AnimatedNumber, Icon, NeuCard, PaceChart, Ring } from '../../components';
 import type { DailyLimit, MonthSeries } from '../../logic/budget';
 import { fontFamily, useTheme } from '../../theme';
+import { formatNumber } from '../../components/format';
 import { hhmm } from './helpers';
 
 function Row({ label, value, pos }: { label: string; value: number; pos?: boolean }) {
@@ -50,7 +51,7 @@ export function MainCard({ dl, series, now }: { dl: DailyLimit; series: MonthSer
         <Text style={{ fontFamily: fontFamily.semibold, fontSize: 12, marginTop: 2, flexShrink: 1, color: colors.text2 }}>
           {under ? 'В темпе · ' : 'Быстрее темпа · '}
           <Text style={{ fontFamily: fontFamily.extrabold, color: colors.accent }}>
-            на {Math.round(Math.abs(series.diff)).toLocaleString('ru-RU').replace(/[\s ]/g, ' ')} ₽ {under ? 'меньше' : 'больше'}
+            на {formatNumber(Math.abs(series.diff))} ₽ {under ? 'меньше' : 'больше'}
           </Text>
         </Text>
       </View>

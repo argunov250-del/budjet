@@ -17,3 +17,4 @@ export { Screen, TAB_BAR_SPACE } from './Screen';
 export { FloatingTabBar } from './FloatingTabBar';
 export { SuccessOverlay } from './SuccessOverlay';
 export { KScrollView, useKeyboardOverlap, useScrollIntoView } from './keyboard';
+export { ErrorBoundary } from './ErrorBoundary';

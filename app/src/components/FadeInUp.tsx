@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, FadeIn, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
 export const EMERGE_MS = 800;
 export const EMERGE_STAGGER = 70;
@@ -29,21 +29,7 @@ export function FadeInUp({ children, index = 0, delay, style }: Props) {
   return <Animated.View style={[a, style]}>{children}</Animated.View>;
 }
 
-/** Same effect as a Reanimated `entering` prop (for conditionally mounted / list items). */
+/** Same effect as `FadeInUp` for conditionally mounted / list items, using only built-in layout animations. */
 export function emergeEntering(index = 0) {
-  return (() => {
-    'worklet';
-    const cfg = { duration: EMERGE_MS, easing: Easing.out(Easing.cubic) };
-    const delay = index * EMERGE_STAGGER;
-    return {
-      initialValues: { opacity: 0, transform: [{ translateY: 6 }, { scale: 0.94 }] },
-      animations: {
-        opacity: withDelay(delay, withTiming(1, cfg)),
-        transform: [
-          { translateY: withDelay(delay, withTiming(0, cfg)) },
-          { scale: withDelay(delay, withTiming(1, cfg)) },
-        ],
-      },
-    };
-  }) as never;
+  return FadeIn.duration(EMERGE_MS).delay(index * EMERGE_STAGGER).easing(EASE);
 }
