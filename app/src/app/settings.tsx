@@ -127,11 +127,11 @@ export default function SettingsScreen() {
             {title('Лимиты категорий')}
             <NeuCard>
               {categories.map((c, i) => (
-                <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderTopWidth: i ? 1 : 0, borderTopColor: colors.divider }}>
+                <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 8, borderTopWidth: i ? 1 : 0, borderTopColor: colors.divider }}>
                   <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c.color }} />
                   <Text style={{ flex: 1, fontFamily: fontFamily.bold, fontSize: 14, color: colors.navy }}>{c.name}</Text>
                   <Field
-                    style={{ width: 110, padding: 10, fontSize: 14, textAlign: 'right' }}
+                    style={{ width: 120, height: 40, paddingVertical: 0, paddingHorizontal: 14, fontSize: 14, textAlign: 'right' }}
                     value={limits[c.id] ?? (c.monthlyLimit ? String(c.monthlyLimit) : '')}
                     placeholder="без лимита" keyboardType="numeric"
                     onChangeText={(t) => setLimits((l) => ({ ...l, [c.id]: t.replace(/\D/g, '') }))}
