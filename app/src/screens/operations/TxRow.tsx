@@ -22,7 +22,7 @@ export function TxRow({ tx, categories, accounts, onDelete, index }: { tx: Trans
     .onEnd((e) => {
       if (e.translationX < THRESH) {
         x.value = withTiming(-420, { duration: 180 }, (d) => { if (d) runOnJS(fire)(); });
-      } else x.value = withSpring(0, { damping: 16, stiffness: 200 });
+      } else x.value = withSpring(0, { damping: 20, stiffness: 140 });
     });
   const row = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
   const bin = useAnimatedStyle(() => ({ opacity: Math.min(1, -x.value / 60) }));
@@ -30,9 +30,9 @@ export function TxRow({ tx, categories, accounts, onDelete, index }: { tx: Trans
   const hm = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
   return (
     <Animated.View
-      entering={FadeInDown.delay(Math.min(index, 8) * 40).springify().damping(16)}
+      entering={FadeInDown.delay(Math.min(index, 8) * 40).springify().damping(20)}
       exiting={SlideOutLeft.duration(220)}
-      layout={LinearTransition.springify().damping(18)}
+      layout={LinearTransition.springify().damping(20)}
       style={{ justifyContent: 'center' }}
     >
       <Animated.View style={[{ position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center', paddingRight: 22 }, bin]}>

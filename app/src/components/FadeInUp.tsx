@@ -12,11 +12,11 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function FadeInUp({ children, index = 0, delay, distance = 22, style }: Props) {
+export function FadeInUp({ children, index = 0, delay, distance = 12, style }: Props) {
   const p = useSharedValue(0);
   const d = delay ?? index * 90;
   useEffect(() => {
-    p.value = withDelay(d, withSpring(1, { damping: 14, stiffness: 90, mass: 0.9 }));
+    p.value = withDelay(d, withSpring(1, { damping: 22, stiffness: 100, mass: 1 }));
   }, [d, p]);
   const a = useAnimatedStyle(() => ({ opacity: Math.min(1, p.value * 1.6), transform: [{ translateY: (1 - p.value) * distance }] }));
   return <Animated.View style={[a, style]}>{children}</Animated.View>;

@@ -38,7 +38,7 @@ export function Donut({ slices, selectedId, total }: { slices: Slice[]; selected
   const { colors, shadows } = useTheme();
   const grow = useSharedValue(0);
   const sel = useSharedValue(0);
-  useEffect(() => { grow.value = withTiming(1, { duration: 1400, easing: Easing.out(Easing.cubic) }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { grow.value = withTiming(1, { duration: 900, easing: Easing.out(Easing.cubic) }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { sel.value = withTiming(selectedId ? 1 : 0, { duration: 300 }); }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
   const sum = slices.reduce((a, s) => a + s.value, 0);
   let acc = 0;

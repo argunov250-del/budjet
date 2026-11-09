@@ -13,7 +13,7 @@ function Flame() {
   useEffect(() => {
     s.value = withRepeat(withSequence(withTiming(1, { duration: 800, easing: Easing.inOut(Easing.quad) }), withTiming(0, { duration: 800, easing: Easing.inOut(Easing.quad) })), -1);
   }, [s]);
-  const a = useAnimatedStyle(() => ({ transform: [{ scale: 1 + s.value * 0.12 }, { rotate: `${-4 * s.value}deg` }] }));
+  const a = useAnimatedStyle(() => ({ transform: [{ scale: 1 + s.value * 0.06 }, { rotate: `${-4 * s.value}deg` }] }));
   return (
     <Animated.View style={a}>
       <Svg width={16} height={16} viewBox="0 0 24 24">
@@ -34,7 +34,7 @@ export function Header({ now, streak }: { now: Date; streak: number }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const k = useSharedValue(0);
-  const av = useAnimatedStyle(() => ({ transform: [{ scale: 1 - k.value * 0.08 }] }));
+  const av = useAnimatedStyle(() => ({ transform: [{ scale: 1 - k.value * 0.03 }] }));
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: insets.top + 12, paddingBottom: 4, paddingHorizontal: 2 }}>
       <View style={{ flexShrink: 1 }}>
@@ -48,8 +48,8 @@ export function Header({ now, streak }: { now: Date; streak: number }) {
       </View>
       <Pressable accessibilityLabel="Настройки"
         onPress={() => router.push('/settings' as any)}
-        onPressIn={() => { k.value = withSpring(1, { damping: 14, stiffness: 220 }); tap(); }}
-        onPressOut={() => { k.value = withSpring(0, { damping: 10, stiffness: 160 }); }}>
+        onPressIn={() => { k.value = withSpring(1, { damping: 20, stiffness: 140 }); tap(); }}
+        onPressOut={() => { k.value = withSpring(0, { damping: 20, stiffness: 140 }); }}>
         <Animated.View style={[av, { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.bg, boxShadow: shadows.raisedS, alignItems: 'center', justifyContent: 'center' }]}>
           <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={colors.navy} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
             <Circle cx={12} cy={12} r={3} />

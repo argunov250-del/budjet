@@ -27,7 +27,7 @@ function OpRow({ tx, cats, accounts, first, now, animateIn, onDelete }: { tx: Tr
         x.value = withTiming(-520, { duration: 220 }, (fin) => { if (fin) runOnJS(onDelete)(tx.id); });
       } else {
         armed.value = false;
-        x.value = withSpring(0, { damping: 14, stiffness: 220, mass: 0.8 });
+        x.value = withSpring(0, { damping: 20, stiffness: 140, mass: 0.8 });
       }
     });
   const fg = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
@@ -36,8 +36,8 @@ function OpRow({ tx, cats, accounts, first, now, animateIn, onDelete }: { tx: Tr
   const icon = v.icon;
   return (
     <Animated.View
-      layout={LinearTransition.springify().damping(18).stiffness(160)}
-      entering={animateIn ? FadeInDown.springify().damping(14) : undefined}
+      layout={LinearTransition.springify().damping(20).stiffness(120)}
+      entering={animateIn ? FadeInDown.springify().damping(20) : undefined}
       exiting={FadeOut.duration(180)}
     >
       <View style={{ borderTopWidth: first ? 0 : 1, borderTopColor: colors.divider }}>

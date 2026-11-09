@@ -12,8 +12,8 @@ function Pill({ title, onPress, disabled }: { title: string; onPress?: () => voi
   const a = useAnimatedStyle(() => ({ transform: [{ scale: 1 - k.value * 0.07 }] }));
   return (
     <Pressable disabled={disabled} onPress={onPress} style={{ alignSelf: 'flex-start' }}
-      onPressIn={() => { k.value = withSpring(1, { damping: 14, stiffness: 260 }); tap(); }}
-      onPressOut={() => { k.value = withSpring(0, { damping: 9, stiffness: 180 }); }}>
+      onPressIn={() => { k.value = withSpring(1, { damping: 20, stiffness: 140 }); tap(); }}
+      onPressOut={() => { k.value = withSpring(0, { damping: 20, stiffness: 140 }); }}>
       <Animated.View style={[{ backgroundColor: colors.ink, borderRadius: 99, paddingVertical: 10, paddingHorizontal: 20, boxShadow: shadows.pill, opacity: disabled ? 0.55 : 1 }, a]}>
         <Text style={{ color: colors.inkText, fontFamily: fontFamily.bold, fontSize: 13.5 }}>{title}</Text>
       </Animated.View>
@@ -28,7 +28,7 @@ export function FillHint({ info, filled, onFill }: { info: FillInfo | null; fill
   useEffect(() => { if (info) setLast(info); }, [info]);
   const bounce = useSharedValue(1);
   useEffect(() => {
-    if (done) bounce.value = withSequence(withSpring(1.35, { damping: 6, stiffness: 300 }), withSpring(1, { damping: 8, stiffness: 160 }));
+    if (done) bounce.value = withSequence(withSpring(1.03, { damping: 6, stiffness: 140 }), withSpring(1, { damping: 20, stiffness: 140 }));
   }, [done, bounce]);
   const ib = useAnimatedStyle(() => ({ transform: [{ scale: bounce.value }] }));
   const data = info ?? last;

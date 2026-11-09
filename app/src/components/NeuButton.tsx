@@ -26,8 +26,8 @@ export function NeuButton({ title, onPress, variant = 'pill', disabled, full, st
     <Pressable
       disabled={disabled}
       onPress={onPress}
-      onPressIn={() => { setDown(true); s.value = withSpring(0.93, { damping: 12, stiffness: 260 }); tap(); }}
-      onPressOut={() => { setDown(false); s.value = withSpring(1, { damping: 10, stiffness: 220 }); }}
+      onPressIn={() => { setDown(true); s.value = withSpring(0.97, { damping: 20, stiffness: 140 }); tap(); }}
+      onPressOut={() => { setDown(false); s.value = withSpring(1, { damping: 20, stiffness: 140 }); }}
       style={full ? { alignSelf: 'stretch' } : { alignSelf: 'flex-start' }}
     >
       <Animated.View

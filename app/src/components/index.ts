@@ -14,3 +14,4 @@ export { FadeInUp } from './FadeInUp';
 export { Avatar } from './Avatar';
 export { Screen, TAB_BAR_SPACE } from './Screen';
 export { FloatingTabBar } from './FloatingTabBar';
+export { SuccessOverlay } from './SuccessOverlay';

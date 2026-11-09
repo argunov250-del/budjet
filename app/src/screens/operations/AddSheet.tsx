@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
-import { BottomSheet, Icon, NeuButton, formatNumber, success, tap } from '../../components';
+import { BottomSheet, Icon, NeuButton, SuccessOverlay, formatNumber, tap } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
 import { incomeCategories, type Account, type Category, type TxKind } from '../../store';
 import { Segmented, SelChip } from '../shared/ui';
 import { TextInput } from 'react-native';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
-const SPRING = { damping: 14, stiffness: 240, mass: 0.7 };
+const SPRING = { damping: 20, stiffness: 140, mass: 0.7 };
 
 function Key({ k, onPress }: { k: string; onPress: (k: string) => void }) {
   const { colors, shadows } = useTheme();
@@ -19,7 +19,7 @@ function Key({ k, onPress }: { k: string; onPress: (k: string) => void }) {
   return (
     <Pressable
       style={{ width: '31%' }}
-      onPressIn={() => { setDown(true); s.value = withSpring(0.94, SPRING); tap(); }}
+      onPressIn={() => { setDown(true); s.value = withSpring(0.97, SPRING); tap(); }}
       onPressOut={() => { setDown(false); s.value = withSpring(1, SPRING); }}
       onPress={() => onPress(k)}
     >
@@ -74,11 +74,12 @@ export function AddSheet({ visible, onClose, categories, accounts, defaultAccoun
   const [to, setTo] = useState('');
   const [note, setNote] = useState('');
   const [yesterday, setYesterday] = useState(false);
+  const [ok, setOk] = useState(false);
   const pop = useSharedValue(1);
   const popSt = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
   useEffect(() => {
     if (!visible) return;
-    setDigits(''); setNote(''); setYesterday(false); setKind('expense');
+    setOk(false); setDigits(''); setNote(''); setYesterday(false); setKind('expense');
     const f = active.find((a) => a.id === defaultAccountId) ?? active[0];
     setFrom(f?.id ?? '');
     setTo(active.find((a) => a.id !== f?.id)?.id ?? '');
@@ -92,8 +93,10 @@ export function AddSheet({ visible, onClose, categories, accounts, defaultAccoun
   const canTransfer = active.length >= 2 && !!to && to !== from;
   const valid = amount > 0 && !!from && (kind !== 'transfer' || canTransfer);
   const submit = () => {
-    if (!valid) return;
-    success();
+    if (!valid || ok) return;
+    setOk(true);
+  };
+  const commit = () => {
     const d = new Date();
     if (yesterday) d.setDate(d.getDate() - 1);
     onSubmit({
@@ -152,6 +155,7 @@ export function AddSheet({ visible, onClose, categories, accounts, defaultAccoun
         <NeuButton title="Добавить" onPress={submit} disabled={!valid} full />
       </View>
       </ScrollView>
+      <SuccessOverlay visible={ok} onDone={commit} radius={32} />
     </BottomSheet>
   );
 }

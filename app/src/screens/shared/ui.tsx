@@ -4,10 +4,10 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { tap } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
 
-const SPRING = { damping: 14, stiffness: 240, mass: 0.7 };
+const SPRING = { damping: 20, stiffness: 140, mass: 0.7 };
 
 /** Pressable with spring scale + opacity feedback (no ripple / highlight). */
-export function PressScale({ children, onPress, style, disabled, scale = 0.96, label }: {
+export function PressScale({ children, onPress, style, disabled, scale = 0.97, label }: {
   children: ReactNode; onPress?: () => void; style?: StyleProp<ViewStyle>; disabled?: boolean; scale?: number; label?: string;
 }) {
   const s = useSharedValue(1);
@@ -48,7 +48,7 @@ export function Segmented<T extends string>({ items, value, onChange }: { items:
   const target = idx * seg;
   useEffect(() => {
     if (w <= 0) return;
-    if (first.value) { x.value = target; first.value = false; } else x.value = withSpring(target, { damping: 16, stiffness: 200, mass: 0.8 });
+    if (first.value) { x.value = target; first.value = false; } else x.value = withSpring(target, { damping: 20, stiffness: 140, mass: 0.8 });
   }, [w, target]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <View onLayout={(e) => setW(e.nativeEvent.layout.width - 8)}

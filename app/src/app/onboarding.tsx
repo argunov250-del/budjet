@@ -51,7 +51,7 @@ export default function Onboarding() {
     <Screen>
       <FadeInUp index={0}><View style={{ paddingTop: 24 }}>{dots}</View></FadeInUp>
       {step === 0 && (
-        <Animated.View key="s0" entering={FadeInRight.springify().damping(16)} exiting={FadeOutLeft.duration(180)}>
+        <Animated.View key="s0" entering={FadeInRight.springify().damping(20)} exiting={FadeOutLeft.duration(180)}>
           <NeuCard>
             {h1('Добро пожаловать в Ровно')}
             {p('Начнём со счёта, на котором вы держите деньги.')}
@@ -68,7 +68,7 @@ export default function Onboarding() {
         </Animated.View>
       )}
       {step === 1 && (
-        <Animated.View key="s1" entering={FadeInRight.springify().damping(16)} exiting={FadeOutLeft.duration(180)}>
+        <Animated.View key="s1" entering={FadeInRight.springify().damping(20)} exiting={FadeOutLeft.duration(180)}>
           <NeuCard>
             {h1('Бюджет на месяц')}
             {p('Из него считается лимит на каждый день. Можно изменить позже в настройках.')}
@@ -86,9 +86,9 @@ export default function Onboarding() {
         </Animated.View>
       )}
       {step === 2 && (
-        <Animated.View key="s2" entering={FadeInRight.springify().damping(16)} exiting={FadeOutLeft.duration(180)}>
+        <Animated.View key="s2" entering={FadeInRight.springify().damping(20)} exiting={FadeOutLeft.duration(180)}>
           <NeuCard style={{ alignItems: 'center' }}>
-            <Animated.View entering={ZoomIn.delay(150).springify().damping(9)}
+            <Animated.View entering={ZoomIn.delay(150).springify().damping(20)}
               style={{ width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, boxShadow: shadows.raised }}>
               <Text style={{ fontSize: 38 }}>🎉</Text>
             </Animated.View>

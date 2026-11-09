@@ -12,7 +12,7 @@ import { AddSheet } from '../../screens/operations/AddSheet';
 import { TxRow } from '../../screens/operations/TxRow';
 
 const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-const SPRING = { damping: 14, stiffness: 220, mass: 0.7 };
+const SPRING = { damping: 20, stiffness: 140, mass: 0.7 };
 const DAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
 const MON_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 
@@ -140,7 +140,7 @@ export default function OperationsScreen() {
             <Text style={{ fontFamily: fontFamily.semibold, fontSize: 13.5, color: colors.text2, textAlign: 'center', paddingVertical: 20 }}>{transactions.length === 0 ? 'Операций пока нет. Нажмите «+», чтобы добавить первую' : 'Ничего не найдено'}</Text>
           ) : (
             groups.map(([k, g], gi) => (
-              <Animated.View key={k} layout={LinearTransition.springify().damping(18)} style={{ marginTop: gi ? 8 : 0 }}>
+              <Animated.View key={k} layout={LinearTransition.springify().damping(20)} style={{ marginTop: gi ? 8 : 0 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingVertical: 6 }}>
                   <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.text2 }}>{dayTitle(g.date, now)}</Text>
                   {g.sum > 0 && <AnimatedNumber value={g.sum} duration={700} format={(n) => formatRub(n).replace('−', '')} prefix="−" style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.navy }} />}
@@ -177,7 +177,7 @@ function Fab({ onPress }: { onPress: () => void }) {
   const s = useSharedValue(1);
   const st = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel="Добавить операцию" onPress={() => { tap(); onPress(); }} onPressIn={() => { s.value = withSpring(0.9, SPRING); }} onPressOut={() => { s.value = withSpring(1, SPRING); }}>
+    <Pressable accessibilityRole="button" accessibilityLabel="Добавить операцию" onPress={() => { tap(); onPress(); }} onPressIn={() => { s.value = withSpring(0.97, SPRING); }} onPressOut={() => { s.value = withSpring(1, SPRING); }}>
       <Animated.View style={[{ width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ink, boxShadow: shadows.pill }, st]}>
         <Icon name="plus" size={26} color={colors.inkText} strokeWidth={2.4} />
       </Animated.View>

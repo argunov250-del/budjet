@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, LinearTransition, ZoomIn, useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, LinearTransition, ZoomIn } from 'react-native-reanimated';
 import { SelChip } from '../../screens/shared/ui';
-import { FadeInUp, Icon, NeuButton, NeuCard, Screen, formatRub, success, tap, useToast } from '../../components';
+import { FadeInUp, Icon, NeuButton, NeuCard, Screen, SuccessOverlay, formatRub, tap, useToast } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
 import { useBudgetStore } from '../../store';
 import { parseQuickInput, type ParsedItem } from '../../logic/budget';
@@ -21,25 +21,24 @@ export default function AiScreen() {
   const [picking, setPicking] = useState<number | null>(null);
   const [done, setDone] = useState(false);
   const [recent, setRecent] = useState<string[]>(SAMPLES);
-  const check = useSharedValue(0);
-  const checkSt = useAnimatedStyle(() => ({ transform: [{ scale: check.value }], opacity: check.value }));
   const catOf = (id: string) => categories.find((c) => c.id === id);
 
   const parse = () => {
     tap();
     const r = parseQuickInput(text);
-    setItems(r); setPicking(null); setDone(false); check.value = 0;
+    setItems(r); setPicking(null); setDone(false);
     if (!r.length) toast.show('Не удалось разобрать. Пример: кофе 250');
   };
   const addAll = () => {
-    items.forEach((it) => addTransaction({ kind: 'expense', amount: it.amount, categoryId: it.categoryId, note: it.note, accountId }));
-    success();
+    if (done) return;
     setDone(true);
-    check.value = withSequence(withSpring(1.25, { damping: 8, stiffness: 180 }), withSpring(1, { damping: 12 }));
+  };
+  const commitAll = () => {
+    items.forEach((it) => addTransaction({ kind: 'expense', amount: it.amount, categoryId: it.categoryId, note: it.note, accountId }));
     const phrase = text.trim();
     if (phrase) setRecent((r) => [phrase, ...r.filter((x) => x !== phrase)].slice(0, 6));
     toast.show(`Добавлено операций: ${items.length}`);
-    setTimeout(() => { setItems([]); setText(''); setDone(false); }, 1400);
+    setItems([]); setText(''); setDone(false);
   };
   const total = items.reduce((a, i) => a + i.amount, 0);
 
@@ -67,13 +66,13 @@ export default function AiScreen() {
         </FadeInUp>
       )}
       {items.length > 0 && (
-        <Animated.View entering={FadeInDown.springify().damping(16)} layout={LinearTransition.springify()}>
+        <Animated.View entering={FadeInDown.springify().damping(20)} layout={LinearTransition.springify().damping(20)}>
           <NeuCard>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
               {items.map((it, i) => {
                 const c = catOf(it.categoryId);
                 return (
-                  <Animated.View key={i} entering={ZoomIn.delay(i * 90).springify().damping(13)} layout={LinearTransition.springify()}>
+                  <Animated.View key={i} entering={ZoomIn.delay(i * 90).springify().damping(20)} layout={LinearTransition.springify().damping(20)}>
                     <Pressable onPress={() => { tap(); setPicking(picking === i ? null : i); }}
                       style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingLeft: 10, paddingRight: 13, borderRadius: 99, backgroundColor: colors.bg, boxShadow: picking === i ? shadows.inset : shadows.raisedS }}>
                       <Icon name={c?.icon ?? 'tag'} size={15} color={c?.color ?? colors.text2} />
@@ -104,13 +103,8 @@ export default function AiScreen() {
               <Text style={{ fontFamily: fontFamily.bold, fontSize: 13, color: colors.text2 }}>Итого</Text>
               <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 15, color: colors.navy }}>{formatRub(total)}</Text>
             </View>
-            {done ? (
-              <Animated.View style={[{ alignSelf: 'center', width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ok }, checkSt]}>
-                <Icon name="check" size={28} color="#fff" strokeWidth={3} />
-              </Animated.View>
-            ) : (
-              <NeuButton title="Добавить все" onPress={addAll} disabled={!accountId} full />
-            )}
+            <NeuButton title="Добавить все" onPress={addAll} disabled={!accountId} full />
+            <SuccessOverlay visible={done} onDone={commitAll} radius={28} />
           </NeuCard>
         </Animated.View>
       )}

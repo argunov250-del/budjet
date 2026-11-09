@@ -16,13 +16,13 @@ type Props = {
   small?: boolean;
 };
 
-const SPRING = { damping: 14, stiffness: 220, mass: 0.7 };
+const SPRING = { damping: 20, stiffness: 140, mass: 0.7 };
 
 export function NeuCard({ children, style, onPress, pressable, radius = 28, padding = 18, small }: Props) {
   const { colors, shadows } = useTheme();
   const down = useSharedValue(0);
   const interactive = pressable ?? !!onPress;
-  const anim = useAnimatedStyle(() => ({ transform: [{ scale: 1 - down.value * 0.025 }] }));
+  const anim = useAnimatedStyle(() => ({ transform: [{ scale: 1 - down.value * 0.012 }] }));
   const sink = useAnimatedStyle(() => ({ opacity: down.value > 1 ? 1 : down.value < 0 ? 0 : down.value }));
   const base: ViewStyle = { backgroundColor: colors.bg, borderRadius: radius, padding };
   const shadow = small ? shadows.raisedS : shadows.raised;

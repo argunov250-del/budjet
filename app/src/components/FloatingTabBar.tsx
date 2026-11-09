@@ -26,7 +26,7 @@ export function FloatingTabBar({ state, emitter, navigateToTab }: BottomTabBarPr
   const activeName = state.routes[state.index]?.name;
   const idx = Math.max(0, ORDER.indexOf(activeName));
   useEffect(() => {
-    x.value = withSpring(idx * slot, { damping: 13, stiffness: 170, mass: 0.8 });
+    x.value = withSpring(idx * slot, { damping: 20, stiffness: 140, mass: 0.8 });
   }, [idx, slot, x]);
   const ind = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
 
@@ -69,15 +69,15 @@ export function FloatingTabBar({ state, emitter, navigateToTab }: BottomTabBarPr
 
 function TabButton({ focused, label, icon, color, onPress }: { focused: boolean; label: string; icon: IconName; color: string; onPress: () => void }) {
   const s = useSharedValue(1);
-  const k = useSharedValue(focused ? 1.12 : 1);
-  useEffect(() => { k.value = withSpring(focused ? 1.12 : 1, { damping: 10, stiffness: 200 }); }, [focused, k]);
+  const k = useSharedValue(focused ? 1.04 : 1);
+  useEffect(() => { k.value = withSpring(focused ? 1.04 : 1, { damping: 20, stiffness: 140 }); }, [focused, k]);
   const a = useAnimatedStyle(() => ({ transform: [{ scale: s.value * k.value }] }));
   return (
     <Pressable
       accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: focused }}
       onPress={onPress}
-      onPressIn={() => { s.value = withSpring(0.88, { damping: 12, stiffness: 300 }); }}
-      onPressOut={() => { s.value = withSpring(1, { damping: 8, stiffness: 220 }); }}
+      onPressIn={() => { s.value = withSpring(0.97, { damping: 20, stiffness: 140 }); }}
+      onPressOut={() => { s.value = withSpring(1, { damping: 20, stiffness: 140 }); }}
       style={{ flex: 1, height: 52, alignItems: 'center', justifyContent: 'center' }}
     >
       <Animated.View style={a}><Icon name={icon} color={color} size={24} /></Animated.View>

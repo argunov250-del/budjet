@@ -28,7 +28,7 @@ function Tile({ item, index, onPress }: { item: CategorySpent; index: number; on
 export function Categories({ items, onPress }: { items: CategorySpent[]; onPress: () => void }) {
   const rows = [items.slice(0, 2), items.slice(2, 4)];
   return (
-    <Animated.View layout={LinearTransition.springify().damping(18)} style={{ gap: 14 }}>
+    <Animated.View layout={LinearTransition.springify().damping(20)} style={{ gap: 14 }}>
       {rows.map((r, ri) => (
         <View key={ri} style={{ flexDirection: 'row', gap: 14 }}>
           {r.map((it, i) => <Tile key={it.category.id} item={it} index={ri * 2 + i} onPress={onPress} />)}

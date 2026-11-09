@@ -17,14 +17,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const show = useCallback((m: string, ms = 1800) => {
     setMsg(m);
-    p.value = withSpring(1, { damping: 12, stiffness: 160 });
+    p.value = withSpring(1, { damping: 20, stiffness: 140 });
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => { p.value = withTiming(0, { duration: 250 }); }, ms);
   }, [p]);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   const a = useAnimatedStyle(() => ({
     opacity: Math.min(1, p.value),
-    transform: [{ translateY: (1 - p.value) * 20 }, { scale: 0.9 + 0.1 * p.value }],
+    transform: [{ translateY: (1 - p.value) * 12 }, { scale: 0.97 + 0.03 * p.value }],
   }));
   return (
     <ToastCtx.Provider value={{ show }}>

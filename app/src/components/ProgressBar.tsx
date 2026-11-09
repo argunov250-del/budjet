@@ -24,13 +24,13 @@ export function ProgressBar({ value, hot, height = 8, delay = 0, style }: Props)
   useEffect(() => {
     if (first.value) {
       first.value = false;
-      p.value = withTiming(v, { duration: 1300, easing: Easing.bezier(0.22, 1, 0.36, 1) });
+      p.value = withTiming(v, { duration: 900, easing: Easing.bezier(0.22, 1, 0.36, 1) });
       if (delay) p.value = 0; // overwritten below by delayed timeout
     } else {
-      p.value = withSpring(v, { damping: 14, stiffness: 120 });
+      p.value = withSpring(v, { damping: 20, stiffness: 100 });
     }
     if (delay) {
-      const t = setTimeout(() => { p.value = withTiming(v, { duration: 1300, easing: Easing.bezier(0.22, 1, 0.36, 1) }); }, delay);
+      const t = setTimeout(() => { p.value = withTiming(v, { duration: 900, easing: Easing.bezier(0.22, 1, 0.36, 1) }); }, delay);
       return () => clearTimeout(t);
     }
   }, [v]); // eslint-disable-line react-hooks/exhaustive-deps

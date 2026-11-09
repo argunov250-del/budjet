@@ -12,7 +12,7 @@ function Bar({ item, max, index }: { item: BarItem; max: number; index: number }
   const h = useSharedValue(0);
   const target = max > 0 ? Math.max(item.value > 0 ? 6 : 0, (item.value / max) * H) : 0;
   useEffect(() => {
-    h.value = withDelay(index * 70, withTiming(target, { duration: 900, easing: Easing.out(Easing.back(1.3)) }));
+    h.value = withDelay(index * 70, withTiming(target, { duration: 600, easing: Easing.out(Easing.cubic) }));
   }, [target]); // eslint-disable-line react-hooks/exhaustive-deps
   const st = useAnimatedStyle(() => ({ height: h.value }));
   return (
