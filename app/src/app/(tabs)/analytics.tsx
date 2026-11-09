@@ -159,15 +159,17 @@ export default function AnalyticsScreen() {
       {sec('Прогноз на месяц', `день ${d.today} из ${d.n}`)}
       <FadeInUp index={4}>
         <NeuCard>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <View style={{ marginBottom: 12 }}>
             <View>
               <Text style={{ fontFamily: fontFamily.semibold, fontSize: 12.5, color: colors.text2 }}>К концу месяца потратите</Text>
-              <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 26, letterSpacing: -0.5, color: over > 0 ? colors.accent : colors.navy, fontVariant: ['tabular-nums'] }}>≈ {formatRub(d.forecast)}</Text>
+              <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 26, lineHeight: 34, paddingTop: 2, letterSpacing: -0.5, color: over > 0 ? colors.accent : colors.navy, fontVariant: ['tabular-nums'] }}>≈ {formatRub(d.forecast)}</Text>
             </View>
+            <View style={{ alignSelf: 'flex-start', marginTop: 8 }}>
             <Chip
               label={over > 0 ? `перерасход ${formatNumber(over)} ₽` : `запас ${formatNumber(-over)} ₽`}
               icon={<Icon name={over > 0 ? 'sparkles' : 'check'} size={15} color={over > 0 ? colors.accent : colors.ok} />}
             />
+            </View>
           </View>
           <ProgressBar value={budget > 0 ? d.forecast / budget : 0} />
           <Text style={{ fontFamily: fontFamily.semibold, fontSize: 12, color: colors.text2, marginTop: 8 }}>Бюджет на месяц {formatRub(budget)}</Text>

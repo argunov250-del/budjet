@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -24,19 +23,24 @@ export function NeuCard({ children, style, onPress, pressable, radius = 28, padd
   const down = useSharedValue(0);
   const interactive = pressable ?? !!onPress;
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: 1 - down.value * 0.025 }] }));
+  const sink = useAnimatedStyle(() => ({ opacity: down.value > 1 ? 1 : down.value < 0 ? 0 : down.value }));
   const base: ViewStyle = { backgroundColor: colors.bg, borderRadius: radius, padding };
-  // The shadow swap is instantaneous (shadows can't interpolate); scale is sprung.
-  const [pressedState, setPressed] = useState(false);
-  const shadow = pressedState ? shadows.inset : small ? shadows.raisedS : shadows.raised;
+  const shadow = small ? shadows.raisedS : shadows.raised;
+  // Raised shadow stays; a separate inset overlay (clipped to the radius) fades in on press.
   const inner = (
-    <Animated.View style={[base, { boxShadow: shadow }, anim, style]}>{children}</Animated.View>
+    <Animated.View style={[base, { boxShadow: shadow }, anim, style]}>
+      {children}
+      {interactive ? (
+        <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius, overflow: 'hidden', boxShadow: shadows.inset }, sink]} />
+      ) : null}
+    </Animated.View>
   );
   if (!interactive) return inner;
   return (
     <Pressable
       onPress={onPress}
-      onPressIn={() => { setPressed(true); down.value = withSpring(1, SPRING); tap(); }}
-      onPressOut={() => { setPressed(false); down.value = withSpring(0, SPRING); }}
+      onPressIn={() => { down.value = withSpring(1, SPRING); tap(); }}
+      onPressOut={() => { down.value = withSpring(0, SPRING); }}
     >
       {inner}
     </Pressable>

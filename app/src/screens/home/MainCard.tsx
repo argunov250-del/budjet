@@ -45,9 +45,9 @@ export function MainCard({ dl, series, now }: { dl: DailyLimit; series: MonthSer
         </View>
       </View>
       <View style={{ height: 1, marginTop: 16, marginBottom: 14, backgroundColor: colors.shDark, opacity: 0.5 }} />
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+      <View style={{ marginBottom: 6 }}>
         <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 15, color: colors.navy }}>Траты vs темп</Text>
-        <Text style={{ fontFamily: fontFamily.semibold, fontSize: 12, color: colors.text2 }}>
+        <Text style={{ fontFamily: fontFamily.semibold, fontSize: 12, marginTop: 2, flexShrink: 1, color: colors.text2 }}>
           {under ? 'В темпе · ' : 'Быстрее темпа · '}
           <Text style={{ fontFamily: fontFamily.extrabold, color: colors.accent }}>
             на {Math.round(Math.abs(series.diff)).toLocaleString('ru-RU').replace(/[\s ]/g, ' ')} ₽ {under ? 'меньше' : 'больше'}

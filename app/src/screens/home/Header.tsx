@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
-import { AnimatedNumber, Avatar, tap } from '../../components';
+import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import { AnimatedNumber, tap } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
 import { dateLine, greeting, plural } from './helpers';
 
@@ -29,10 +31,12 @@ function Flame() {
 
 export function Header({ now, streak }: { now: Date; streak: number }) {
   const { colors, shadows } = useTheme();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
   const k = useSharedValue(0);
   const av = useAnimatedStyle(() => ({ transform: [{ scale: 1 - k.value * 0.08 }] }));
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4, paddingHorizontal: 2 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: insets.top + 12, paddingBottom: 4, paddingHorizontal: 2 }}>
       <View style={{ flexShrink: 1 }}>
         <Text style={{ fontFamily: fontFamily.semibold, fontSize: 13, color: colors.text2 }}>{dateLine(now)}</Text>
         <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 30, letterSpacing: -0.5, color: colors.navy, marginTop: 2, marginBottom: 10 }}>{greeting(now)}</Text>
@@ -42,10 +46,16 @@ export function Header({ now, streak }: { now: Date; streak: number }) {
             suffix={` ${plural(streak, 'день', 'дня', 'дней')} в бюджете`} />
         </View>
       </View>
-      <Pressable accessibilityLabel="Профиль"
+      <Pressable accessibilityLabel="Настройки"
+        onPress={() => router.push('/settings' as any)}
         onPressIn={() => { k.value = withSpring(1, { damping: 14, stiffness: 220 }); tap(); }}
         onPressOut={() => { k.value = withSpring(0, { damping: 10, stiffness: 160 }); }}>
-        <Animated.View style={av}><Avatar letter="А" size={52} /></Animated.View>
+        <Animated.View style={[av, { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.bg, boxShadow: shadows.raisedS, alignItems: 'center', justifyContent: 'center' }]}>
+          <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={colors.navy} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+            <Circle cx={12} cy={12} r={3} />
+            <Path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+          </Svg>
+        </Animated.View>
       </Pressable>
     </View>
   );

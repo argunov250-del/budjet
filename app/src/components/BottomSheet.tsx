@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, View, useWindowDimensions } from 'react-native';
+import { BackHandler, KeyboardAvoidingView, Modal, Platform, Pressable, View, useWindowDimensions } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MAX_WIDTH, useTheme } from '../theme';
 
@@ -27,6 +29,18 @@ export function BottomSheet({ visible, onClose, children }: Props) {
       });
     }
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!visible) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => { onClose(); return true; });
+    return () => sub.remove();
+  }, [visible, onClose]);
+
+  const pan = Gesture.Pan()
+    .onUpdate((e) => { y.value = Math.max(0, e.translationY); })
+    .onEnd((e) => {
+      if (e.translationY > 100 || e.velocityY > 800) runOnJS(onClose)();
+      else y.value = withSpring(0, { damping: 17, stiffness: 140, mass: 0.9 });
+    });
   const scheduleClose = () => { setTimeoutJS(() => setMounted(false)); };
 
   const sheet = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
@@ -35,6 +49,7 @@ export function BottomSheet({ visible, onClose, children }: Props) {
 
   return (
     <Modal visible={mounted} transparent animationType="none" statusBarTranslucent onRequestClose={onClose}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, justifyContent: 'flex-end' }}>
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.scrim }, blur, back]}>
           <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Закрыть" />
@@ -43,16 +58,21 @@ export function BottomSheet({ visible, onClose, children }: Props) {
           style={[
             {
               alignSelf: 'center', width: '100%', maxWidth: MAX_WIDTH, backgroundColor: colors.bg,
-              borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingTop: 14, paddingHorizontal: 20,
+              borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingTop: 0, paddingHorizontal: 20, maxHeight: height - insets.top - 24,
               paddingBottom: 24 + insets.bottom, boxShadow: shadows.sheet,
             },
             sheet,
           ]}
         >
-          <View style={{ width: 42, height: 5, borderRadius: 9, backgroundColor: colors.track, alignSelf: 'center', marginBottom: 14, boxShadow: shadows.inset }} />
+          <GestureDetector gesture={pan}>
+            <View style={{ paddingTop: 14, paddingBottom: 14, marginHorizontal: -20, alignItems: 'center' }} collapsable={false}>
+              <View style={{ width: 42, height: 5, borderRadius: 9, backgroundColor: colors.track, boxShadow: shadows.inset }} />
+            </View>
+          </GestureDetector>
           {children}
         </Animated.View>
       </KeyboardAvoidingView>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
