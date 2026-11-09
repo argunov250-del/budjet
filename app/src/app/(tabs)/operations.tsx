@@ -115,7 +115,7 @@ export default function OperationsScreen() {
         </FadeInUp>
         {accounts.length > 1 && (
           <FadeInUp index={2}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 4, paddingHorizontal: 2 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16, marginVertical: -8 }} contentContainerStyle={{ gap: 12, paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center' }}>
               <SelChip label="Все счета" active={acc === null} onPress={() => setAcc(null)} />
               {accounts.map((a) => <SelChip key={a.id} label={`${a.icon} ${a.name}${a.archived ? ' (архив)' : ''}`} active={acc === a.id} onPress={() => setAcc(acc === a.id ? null : a.id)} />)}
             </ScrollView>

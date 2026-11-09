@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
+import { Platform } from 'react-native';
+import { useScrollIntoView } from './keyboard';
 import { TextInput, type TextInputProps } from 'react-native';
 import { fontFamily, useTheme } from '../theme';
 
@@ -6,12 +8,15 @@ import { fontFamily, useTheme } from '../theme';
 export function NeuInput({ small, style, onFocus, onBlur, multiline, ...rest }: TextInputProps & { small?: boolean }) {
   const { colors, shadows } = useTheme();
   const [focus, setFocus] = useState(false);
+  const ref = useRef<ComponentRef<typeof TextInput>>(null);
+  const reveal = useScrollIntoView();
   return (
     <TextInput
       placeholderTextColor={colors.text2}
       multiline={multiline}
       {...rest}
-      onFocus={(e) => { setFocus(true); onFocus?.(e); }}
+      ref={ref}
+      onFocus={(e) => { setFocus(true); onFocus?.(e); setTimeout(() => reveal(ref.current), Platform.OS === 'android' ? 350 : 120); }}
       onBlur={(e) => { setFocus(false); onBlur?.(e); }}
       style={[
         {

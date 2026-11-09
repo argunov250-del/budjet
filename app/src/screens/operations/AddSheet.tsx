@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import { BottomSheet, Icon, NeuButton, SuccessOverlay, formatNumber, tap } from '../../components';
 import { fontFamily, useTheme } from '../../theme';
@@ -8,17 +8,19 @@ import { Segmented, SelChip } from '../shared/ui';
 import { NeuInput } from '../../components/NeuInput';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
+const TILE_GAP = 10;
+const TILE_COLS = 4;
 const SPRING = { damping: 20, stiffness: 140, mass: 0.7 };
 
-function Key({ k, onPress }: { k: string; onPress: (k: string) => void }) {
+function Key({ k, w, onPress }: { k: string; w: number; onPress: (k: string) => void }) {
   const { colors, shadows } = useTheme();
   const s = useSharedValue(1);
   const [down, setDown] = useState(false);
   const st = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
-  if (!k) return <View style={{ width: '31%', height: 52 }} />;
+  if (!k) return <View style={{ width: w, height: 52 }} />;
   return (
     <Pressable
-      style={{ width: '31%' }}
+      style={{ width: w }}
       onPressIn={() => { setDown(true); s.value = withSpring(0.97, SPRING); tap(); }}
       onPressOut={() => { setDown(false); s.value = withSpring(1, SPRING); }}
       onPress={() => onPress(k)}
@@ -30,12 +32,12 @@ function Key({ k, onPress }: { k: string; onPress: (k: string) => void }) {
   );
 }
 
-function CatTile({ c, active, onPress }: { c: Category; active: boolean; onPress: () => void }) {
+function CatTile({ c, w, active, onPress }: { c: Category; w: number; active: boolean; onPress: () => void }) {
   const { colors, shadows } = useTheme();
   const s = useSharedValue(1);
   const st = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
   return (
-    <Pressable onPress={() => { tap(); s.value = withSequence(withSpring(0.92, SPRING), withSpring(1, SPRING)); onPress(); }}>
+    <Pressable style={{ width: w }} onPress={() => { tap(); s.value = withSequence(withSpring(0.92, SPRING), withSpring(1, SPRING)); onPress(); }}>
       <Animated.View style={[{ width: 74, paddingVertical: 10, borderRadius: 18, alignItems: 'center', gap: 4, backgroundColor: colors.bg, boxShadow: active ? shadows.inset : shadows.raisedS }, st]}>
         <Icon name={c.icon} size={20} color={active ? c.color : colors.text2} />
         <Text numberOfLines={1} style={{ fontFamily: fontFamily.bold, fontSize: 11, color: active ? colors.navy : colors.text2 }}>{c.name}</Text>
@@ -75,6 +77,9 @@ export function AddSheet({ visible, onClose, categories, accounts, defaultAccoun
   const [note, setNote] = useState('');
   const [yesterday, setYesterday] = useState(false);
   const [ok, setOk] = useState(false);
+  const [gridW, setGridW] = useState(0);
+  const tileW = Math.floor((gridW - TILE_GAP * (TILE_COLS - 1)) / TILE_COLS);
+  const keyW = Math.floor((gridW - 24) / 3);
   const pop = useSharedValue(1);
   const popSt = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
   useEffect(() => {
@@ -111,9 +116,8 @@ export function AddSheet({ visible, onClose, categories, accounts, defaultAccoun
   const sign = kind === 'income' ? '+' : kind === 'expense' && amount ? '−' : '';
 
   return (
-    <BottomSheet visible={visible} onClose={onClose}>
-      <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 640 }} keyboardShouldPersistTaps="handled">
-      <View style={{ gap: 14 }}>
+    <BottomSheet visible={visible} onClose={onClose} overlay={<SuccessOverlay visible={ok} onDone={commit} radius={32} />}>
+      <View style={{ gap: 14 }} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
         <Segmented items={KINDS} value={kind} onChange={setKind} />
         <Animated.Text style={[{ fontFamily: fontFamily.extrabold, fontSize: 40, letterSpacing: -1, textAlign: 'center', color: amount ? (kind === 'income' ? colors.ok : colors.navy) : colors.text2, fontVariant: ['tabular-nums'] }, popSt]}>
           {sign}{formatNumber(amount)} ₽
@@ -136,8 +140,8 @@ export function AddSheet({ visible, onClose, categories, accounts, defaultAccoun
             )}
           </View>
         ) : (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-            {cats.map((c) => <CatTile key={c.id} c={c} active={c.id === curCat} onPress={() => (kind === 'income' ? setIncCat(c.id) : setCat(c.id))} />)}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: TILE_GAP, justifyContent: 'center' }}>
+            {gridW > 0 && cats.map((c) => <CatTile key={c.id} c={c} w={tileW} active={c.id === curCat} onPress={() => (kind === 'income' ? setIncCat(c.id) : setCat(c.id))} />)}
           </View>
         )}
         <NeuInput value={note} onChangeText={setNote} placeholder="Заметка" small />
@@ -146,13 +150,11 @@ export function AddSheet({ visible, onClose, categories, accounts, defaultAccoun
           <SelChip label="Сегодня" active={!yesterday} onPress={() => setYesterday(false)} />
           <SelChip label="Вчера" active={yesterday} onPress={() => setYesterday(true)} />
         </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' }}>
-          {KEYS.map((k, i) => <Key key={i} k={k} onPress={press} />)}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
+          {gridW > 0 && KEYS.map((k, i) => <Key key={i} k={k} w={keyW} onPress={press} />)}
         </View>
         <NeuButton title="Добавить" onPress={submit} disabled={!valid} full />
       </View>
-      </ScrollView>
-      <SuccessOverlay visible={ok} onDone={commit} radius={32} />
     </BottomSheet>
   );
 }

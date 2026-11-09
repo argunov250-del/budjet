@@ -15,7 +15,7 @@ export function AccountsStrip({ accounts, txs, onAdd }: { accounts: Account[]; t
         <Text style={{ fontFamily: fontFamily.extrabold, fontSize: 17, color: colors.navy }}>Счета</Text>
         <AnimatedNumber value={total} duration={900} prefix="Всего " suffix=" ₽" style={{ fontFamily: fontFamily.extrabold, fontSize: 13, color: colors.text2 }} />
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingVertical: 8, alignItems: 'flex-start' }} style={{ marginHorizontal: -16, flexGrow: 0 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 4, paddingVertical: 20, alignItems: 'flex-start' }} style={{ marginHorizontal: -16, marginVertical: -12, flexGrow: 0 }}>
         <View style={{ width: 12 }} />
         {active.map((a) => (
           <NeuCard key={a.id} radius={24} padding={14} small style={{ width: 150, height: 110, gap: 6 }}>

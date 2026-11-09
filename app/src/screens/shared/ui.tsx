@@ -29,9 +29,9 @@ export function SelChip({ label, active, onPress, dot }: { label: string; active
   const { colors, shadows } = useTheme();
   return (
     <PressScale onPress={() => { tap(); onPress(); }}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 99, backgroundColor: colors.bg, boxShadow: active ? shadows.inset : shadows.raisedS }}>
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 99, flexShrink: 0, backgroundColor: colors.bg, boxShadow: active ? shadows.inset : shadows.raisedS }}>
       {dot ? <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: dot }} /> : null}
-      <Text style={{ fontFamily: fontFamily.bold, fontSize: 12.5, color: active ? colors.navy : colors.text2 }}>{label}</Text>
+      <Text numberOfLines={1} style={{ flexShrink: 0, fontFamily: fontFamily.bold, fontSize: 12.5, color: active ? colors.navy : colors.text2 }}>{label}</Text>
     </PressScale>
   );
 }
